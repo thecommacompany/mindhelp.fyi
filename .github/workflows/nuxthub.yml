@@ -37,3 +37,4 @@ jobs:
         id: deploy
         with:
           project-key: mindhelp-fyi-mldi
+          directory: .nuxt/dist
