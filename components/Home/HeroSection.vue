@@ -1,6 +1,6 @@
 <template>
   <div class="text-center">
-    <h1 class="text-4xl md:text-5xl font-bold text-emerald-800 mb-6">
+    <h1 class="text-4xl md:text-5xl font-bold font-display text-emerald-800 mb-6">
       Need help but not sure where to start?
     </h1>
     

@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-b from-emerald-50 to-white">
-    <TheHeader />
+
     
-    <main class="pt-16">
+    <main class="">
       <!-- Hero Section -->
       <section class="container mx-auto px-4 py-16">
         <div class="max-w-4xl mx-auto text-center mb-12">
@@ -28,9 +28,12 @@
 
       <!-- Trust Indicators -->
       <HomeTrustIndicators />
+
+      <!-- Contribute Section  -->
+      <HomeContribute />
     </main>
 
-    <TheFooter />
+
   </div>
 </template>
 

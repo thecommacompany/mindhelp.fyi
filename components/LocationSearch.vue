@@ -2,7 +2,7 @@
   <div class="relative">
     <HeadlessListbox v-model="selectedLocation" as="div">
       <HeadlessListboxButton
-        class="relative w-full flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-50 border border-gray-200 text-gray-700"
+        class="relative w-64 flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-50 border border-gray-200 text-gray-700"
       >
         <span class="material-icons text-emerald-600">location_on</span>
         <span class="block truncate">{{ selectedLocation?.name || 'Select Location' }}</span>
