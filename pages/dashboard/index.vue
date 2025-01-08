@@ -40,8 +40,28 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+
 const { loggedIn, user, session, clear } = useUserSession()
 const router = useRouter()
+
+// Check if profile exists
+const checkProfile = async () => {
+  try {
+    await $fetch('/api/profile')
+  } catch (error) {
+    if (error.statusCode === 404) {
+      router.push('/dashboard/profile')
+    }
+  }
+}
+
+// Run profile check on component mount
+onMounted(() => {
+  if (loggedIn.value) {
+    checkProfile()
+  }
+})
 
 // Handle sign out and redirect
 const handleSignOut = async () => {
@@ -51,7 +71,8 @@ const handleSignOut = async () => {
 
 // Middleware to protect the page
 definePageMeta({
-  middleware: 'auth'
+  middleware: 'auth',
+  layout: 'dashboard'
 })
 </script>
 

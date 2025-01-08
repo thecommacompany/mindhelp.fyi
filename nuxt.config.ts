@@ -10,6 +10,10 @@ export default defineNuxtConfig({
     '@nuxt/content',
     'nuxt-auth-utils'
   ],
+   hub: {
+    blob: true,
+    database: true
+  },
   runtimeConfig: {
     oauth:{
       google: {
