@@ -2,9 +2,8 @@ import { eq } from 'drizzle-orm'
 
 // Define public routes that don't require authentication
 const PUBLIC_ROUTES = [
-  '/api/_auth',
-  '/api/auth',
-
+  '/api/_auth',  // This will match all auth routes including Google OAuth
+  
   { path: '/api/professionals', method: 'GET' },
   { path: '/api/hospitals', method: 'GET' },
   { path: '/api/organizations', method: 'GET' },
@@ -33,6 +32,9 @@ export default defineEventHandler(async (event) => {
       return event.path === route.path && event.method === route.method
     })
 
+    if (isPublicRoute) {
+      return
+    }
 
     const session = await getUserSession(event)
  
