@@ -12,6 +12,11 @@ const PUBLIC_ROUTES = [
 ]
 
 export default defineEventHandler(async (event) => {
+  // Skip auth check during prerendering
+  if (process.env.prerender) {
+    return
+  }
+
   try {
     // Only apply to API routes
     if (!event.path.startsWith('/api/')) {
