@@ -287,7 +287,7 @@ async function handleSubmit() {
       form.append('picture', imageFile.value, imageFile.value.name)
     }
 
-    const endpoint = existingProfile.value ? '/api/profile' : '/api/profile/create'
+    const endpoint = '/api/profile'
     const method = existingProfile.value ? 'PATCH' : 'POST'
     
     console.log('Submitting to:', endpoint, 'with method:', method)
