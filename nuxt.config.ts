@@ -21,6 +21,14 @@ export default defineNuxtConfig({
         clientSecret: '...',
         redirectURL: '...'
       }
+    },
+    session: {
+      name: 'nuxt-session',
+      password: process.env.NUXT_SESSION_PASSWORD || '',
+      maxAge: 60 * 60 * 24 * 7, // 1 week
+      cookie: {
+        sameSite: 'lax'
+      }
     }
   }
 })

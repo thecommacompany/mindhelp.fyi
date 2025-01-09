@@ -1,8 +1,7 @@
 import { eq } from 'drizzle-orm'
-import { requireRole, getProfileId } from '~/server/utils/auth'
 
 export default defineEventHandler(async (event) => {
-  const profileId = await getProfileId(event)
+  const profileId = event.context.session.secure.profileId
   const body = await readBody(event)
   const db = useDrizzle()
 
