@@ -41,13 +41,25 @@ console.log(picture)
         types: ['image']
       })
 
+      // Generate unique filename
+      const timestamp = Date.now()
+      const filename = `profile-pictures/${event.context.session.user.email}-${timestamp}`
+
       // Upload to R2
-      const blob = await hubBlob().put(`profile-pictures/${event.context.session.user.email}-${Date.now()}`, picture, {
+      const blob = await hubBlob().put(filename, picture, {
         addRandomSuffix: true,
-        contentType: picture.type
+        contentType: picture.type,
+        metadata: {
+          userId: event.context.session.user.email,
+          uploadTime: new Date().toISOString()
+        }
       })
-console.log(blob)
-      photoUrl = blob.url
+
+      if (!blob?.pathname) {
+        throw new Error('Failed to get pathname from uploaded blob')
+      }
+
+      photoUrl = `/images/${blob.pathname}`
     } catch (error: any) {
       throw createError({
         statusCode: 400,
