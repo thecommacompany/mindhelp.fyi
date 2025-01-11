@@ -4,7 +4,6 @@ import { eq } from 'drizzle-orm'
 const PUBLIC_ROUTES = [
   '/api/_auth',  // This will match all auth routes including Google OAuth
   
-  { path: '/api/professionals', method: 'GET' },
   { path: '/api/hospitals', method: 'GET' },
   { path: '/api/organizations', method: 'GET' },
   { path: '/api/support-groups', method: 'GET' }

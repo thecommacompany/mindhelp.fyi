@@ -30,7 +30,9 @@ export const profiles = sqliteTable('profiles', {
 // Professionals table
 export const professionals = sqliteTable('professionals', {
   id: text('id').primaryKey(),
-  profileId: text('profile_id').references(() => profiles.id).notNull(),
+  name: text('name').notNull(),
+  profileId: text('profile_id').references(() => profiles.id), // Used when professional creates their own profile
+  phone: text('phone').notNull(),
   specialization: text('specialization').notNull(),
   qualifications: text('qualifications').notNull(),
   licenseNumber: text('license_number'),
@@ -45,7 +47,7 @@ export const professionals = sqliteTable('professionals', {
   latitude: real('latitude'),
   longitude: real('longitude'),
   isClaimable: integer('is_claimable', { mode: 'boolean' }).default(true),
-  claimedBy: text('claimed_by').references(() => profiles.id),
+  claimedBy: text('claimed_by').references(() => profiles.id), // Used when an existing profile is claimed by a professional
   verificationStatus: text('verification_status').default('pending'),
 })
 
@@ -54,6 +56,7 @@ export const hospitals = sqliteTable('hospitals', {
   id: text('id').primaryKey(),
   profileId: text('profile_id').references(() => profiles.id),
   name: text('name').notNull(),
+  phone: text('phone').notNull(),
   type: text('type').notNull(), // hospital, clinic, nursing home, etc.
   facilities: text('facilities'),
   emergencyServices: integer('emergency_services', { mode: 'boolean' }).default(false),
@@ -76,6 +79,7 @@ export const organizations = sqliteTable('organizations', {
   id: text('id').primaryKey(),
   profileId: text('profile_id').references(() => profiles.id),
   name: text('name').notNull(),
+  phone: text('phone').notNull(),
   type: text('type').notNull(), // NGO, research, support group, etc.
   registrationNumber: text('registration_number'),
   website: text('website'),
@@ -113,6 +117,21 @@ export const professionalAffiliations = sqliteTable('professional_affiliations',
   startDate: integer('start_date', { mode: 'timestamp' }),
   endDate: integer('end_date', { mode: 'timestamp' }),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
+})
+
+// Claim requests table
+export const claimRequests = sqliteTable('claim_requests', {
+  id: text('id').primaryKey(),
+  entityType: text('entity_type', { enum: ['professional', 'hospital', 'organization'] }).notNull(),
+  entityId: text('entity_id').notNull(),
+  requestedBy: text('requested_by').references(() => profiles.id).notNull(),
+  status: text('status', { enum: ['pending', 'approved', 'rejected'] }).default('pending'),
+  verificationDocuments: text('verification_documents'), // JSON string containing document URLs
+  notes: text('notes'),
+  reviewedBy: text('reviewed_by').references(() => profiles.id),
+  rejectionReason: text('rejection_reason'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
 
 // Support Groups table

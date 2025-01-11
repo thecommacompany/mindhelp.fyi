@@ -16,7 +16,6 @@ export default defineEventHandler(async (event) => {
     country: form.get('country') as string,
     bio: form.get('bio') as string,
   }
-  console.log('Profile data:', profileData)
 
   // Handle profile picture upload
   const picture = form.get('picture') as File

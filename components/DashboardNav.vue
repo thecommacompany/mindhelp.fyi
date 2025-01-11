@@ -34,10 +34,10 @@
       <div v-show="isMenuOpen" class="md:hidden">
         <div class="py-4 space-y-4">
           <div class="px-4 py-2 text-sm text-gray-600">{{ user?.name }}</div>
-          <NuxtLink to="/dashboard" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg">Overview</NuxtLink>
-          <NuxtLink to="/dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg">Profile</NuxtLink>
-          <NuxtLink to="/dashboard/appointments" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg">Appointments</NuxtLink>
-          <button @click="clear" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg">Logout</button>
+          <NuxtLink to="/dashboard" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg" @click="isMenuOpen=false">Overview</NuxtLink>
+          <NuxtLink to="/dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg" @click="isMenuOpen=false">Profile</NuxtLink>
+          
+          <button @click="clear" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg" >Logout</button>
         </div>
       </div>
     </nav>

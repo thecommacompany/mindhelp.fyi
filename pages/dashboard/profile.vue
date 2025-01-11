@@ -2,14 +2,32 @@
   <div class="min-h-screen bg-gradient-to-br from-sage-50 to-cream-50">
     <div class="max-w-3xl mx-auto py-8 sm:px-6 lg:px-8">
       <div class="px-4 py-6 sm:px-0">
-        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden">
+        <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden relative">
+          <div v-if="formData.isVerified" class="absolute top-4 right-4 bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+            <Icon name="heroicons:check-badge" class="w-5 h-5" />
+            Verified
+          </div>
+          <div v-else class="absolute top-4 right-4 bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+            <Icon name="heroicons:clock" class="w-5 h-5" />
+            Verification Pending
+          </div>
           <div class="px-6 py-8 sm:p-8">
             <h1 class="text-3xl font-display text-gray-900 tracking-tight mb-8">Complete Your Profile</h1>
             
-            <div v-if="loading" class="flex justify-center py-12">
+            <div v-if="isProfileLoading" class="flex justify-center py-12">
               <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-500"></div>
             </div>
             
+            <div v-else-if="profileError" class="text-red-500 text-center py-12">
+              {{ profileError }}
+              <button 
+                @click="refreshProfile" 
+                class="mt-4 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"
+              >
+                Try Again
+              </button>
+            </div>
+
             <form v-else @submit.prevent="handleSubmit" class="space-y-8">
               <div class="space-y-6">
                 <div>
@@ -25,6 +43,7 @@
                     />
                     <Icon name="heroicons:user" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
                   </div>
+                  <p v-if="errors.name" class="text-red-500 text-sm">{{ errors.name }}</p>
                 </div>
 
                 <div>
@@ -72,6 +91,7 @@
                       </transition>
                     </div>
                   </Listbox>
+                  <p v-if="errors.role" class="text-red-500 text-sm">{{ errors.role }}</p>
                 </div>
 
                 <div>
@@ -86,6 +106,7 @@
                     />
                     <Icon name="heroicons:phone" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
                   </div>
+                  <p v-if="errors.phone" class="text-red-500 text-sm">{{ errors.phone }}</p>
                 </div>
 
                 <div>
@@ -100,6 +121,22 @@
                     ></textarea>
                     <Icon name="heroicons:document-text" class="absolute left-4 top-8 text-emerald-600 w-5 h-5" />
                   </div>
+                  <p v-if="errors.bio" class="text-red-500 text-sm">{{ errors.bio }}</p>
+                </div>
+
+                <div>
+                  <label for="address" class="block text-sm font-medium text-emerald-600 mb-2">Address</label>
+                  <div class="relative">
+                    <input 
+                      type="text" 
+                      id="address" 
+                      v-model="formData.address"
+                      placeholder="Your address"
+                      class="w-full px-6 py-4 text-lg rounded-xl border-2 border-emerald-100 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 transition-all pl-12"
+                    />
+                    <Icon name="heroicons:home" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
+                  </div>
+                  <p v-if="errors.address" class="text-red-500 text-sm">{{ errors.address }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -115,6 +152,7 @@
                       />
                       <Icon name="heroicons:building-office-2" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
                     </div>
+                    <p v-if="errors.city" class="text-red-500 text-sm">{{ errors.city }}</p>
                   </div>
 
                   <div>
@@ -129,6 +167,7 @@
                       />
                       <Icon name="heroicons:map" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
                     </div>
+                    <p v-if="errors.state" class="text-red-500 text-sm">{{ errors.state }}</p>
                   </div>
                 </div>
 
@@ -144,13 +183,14 @@
                     />
                     <Icon name="heroicons:globe-alt" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
                   </div>
+                  <p v-if="errors.country" class="text-red-500 text-sm">{{ errors.country }}</p>
                 </div>
 
                 <div>
                   <label class="block text-sm font-medium text-emerald-600 mb-2">Profile Picture</label>
                   <div class="mt-1 flex items-center space-x-4">
-                    <div v-if="imagePreview" class="h-24 w-24 rounded-xl overflow-hidden bg-emerald-50 border-2 border-emerald-100">
-                      <img :src="imagePreview" alt="Profile preview" class="h-full w-full object-cover" />
+                    <div v-if="imagePreview || formData.photoUrl" class="h-24 w-24 rounded-xl overflow-hidden bg-emerald-50 border-2 border-emerald-100">
+                      <img :src="imagePreview || formData.photoUrl" alt="Profile preview" class="h-full w-full object-cover" />
                     </div>
                     <div v-else class="h-24 w-24 rounded-xl overflow-hidden bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center">
                       <Icon name="heroicons:user-circle" class="w-12 h-12 text-emerald-300" />
@@ -191,15 +231,91 @@
 
 <script setup>
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
+import { profileSchema } from '~/schemas/profiles'
+import { useProfile } from '~/composables/useProfile'
 
-const { loggedIn, user } = useUserSession()
-const router = useRouter()
-const { showToast } = useToast()
+const {
+  profile,
+  profileStatus,
+  profileError,
+  isProfileLoading,
+  isPending,
+  refreshProfile,
+  submitProfile
+} = useProfile()
 
-const loading = ref(false)
-const existingProfile = ref(null)
-const imageFile = ref(null)
+const errors = ref({})
 const imagePreview = ref(null)
+
+const formData = reactive({
+  name: profile.value?.data?.name || '',
+  role: profile.value?.data?.role || 'user',
+  phone: profile.value?.data?.phone || '',
+  photoUrl: profile.value?.data?.photoUrl || '',
+  isVerified: profile.value?.data?.isVerified || false
+})
+
+// Watch for profile changes to update form data
+watch(() => profile.value?.data, (newProfile) => {
+  if (newProfile) {
+    formData.name = newProfile.name || ''
+    formData.role = newProfile.role || 'user'
+    formData.phone = newProfile.phone || ''
+    formData.photoUrl = newProfile.photoUrl || ''
+    formData.isVerified = newProfile.isVerified || false
+  }
+}, { immediate: true })
+
+const validateForm = () => {
+  try {
+    // Remove photoUrl from validation if it's empty
+    const dataToValidate = { ...formData }
+    if (!dataToValidate.photoUrl) {
+      delete dataToValidate.photoUrl
+    }
+    
+    const result = profileSchema.safeParse(dataToValidate)
+    if (!result.success) {
+      errors.value = result.error.flatten().fieldErrors
+      console.log('Validation errors:', errors.value)
+      return false
+    }
+    errors.value = {}
+    return true
+  } catch (error) {
+    console.error('Validation error:', error)
+    return false
+  }
+}
+
+const handleSubmit = async () => {
+  try {
+    if (!validateForm()) {
+      return
+    }
+
+    const formDataObj = new FormData()
+    Object.entries(formData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== '') {
+        formDataObj.append(key, value)
+      }
+    })
+    
+    if (imageFile.value) {
+      formDataObj.append('picture', imageFile.value, imageFile.value.name)
+    }
+
+    const { success, error } = await submitProfile(formDataObj)
+    
+    if (success) {
+      console.log('Profile updated successfully')
+    } else {
+      console.log('Failed to save profile:', error)
+    }
+  } catch (error) {
+    console.error('Failed to update profile:', error)
+  }
+}
 
 const availableRoles = [
   { id: 'user', name: 'User' },
@@ -208,54 +324,19 @@ const availableRoles = [
   { id: 'organization', name: 'Organization' },
 ]
 
-const formData = ref({
-  name: '',
-  role: 'user',
-  phone: '',
-  bio: '',
-  city: '',
-  state: '',
-  country: '',
-})
-
-async function fetchProfile() {
-  loading.value = true
-  try {
-    const profile = await $fetch('/api/profile')
-    existingProfile.value = profile
-    formData.value = {
-      name: profile.name || '',
-      role: profile.role || 'user',
-      phone: profile.phone || '',
-      bio: profile.bio || '',
-      city: profile.city || '',
-      state: profile.state || '',
-      country: profile.country || '',
-    }
-    if (profile.photoUrl) {
-      imagePreview.value = profile.photoUrl
-    }
-  } catch (error) {
-    if (error.statusCode !== 404) {
-      console.error('Error fetching profile:', error)
-      showToast('Failed to load profile', 'error')
-    }
-  } finally {
-    loading.value = false
-  }
-}
+const imageFile = ref(null)
 
 const handleImageChange = (event) => {
   const file = event.target.files[0]
   if (file) {
     if (file.size > 2 * 1024 * 1024) {
-      showToast('Image size should be less than 2MB', 'warning')
+      console.log('Image size should be less than 2MB')
       return
     }
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      showToast('Please select an image file', 'warning')
+      console.log('Please select an image file')
       return
     }
 
@@ -267,58 +348,8 @@ const handleImageChange = (event) => {
     reader.readAsDataURL(file)
   }
 }
-
-async function handleSubmit() {
-  loading.value = true
-  try {
-    const form = new FormData()
-    Object.entries(formData.value).forEach(([key, value]) => {
-      if (value !== null && value !== undefined && value !== '') {
-        form.append(key, value)
-      }
-    })
-    
-    if (imageFile.value) {
-      console.log('Appending image file:', {
-        name: imageFile.value.name,
-        type: imageFile.value.type,
-        size: imageFile.value.size
-      })
-      form.append('picture', imageFile.value, imageFile.value.name)
-    }
-
-    const endpoint = '/api/profile'
-    const method = existingProfile.value ? 'PATCH' : 'POST'
-    
-    console.log('Submitting to:', endpoint, 'with method:', method)
-    const response = await $fetch(endpoint, {
-      method,
-      body: form,
-    })
-    console.log('Profile update response:', response)
-
-    showToast('Profile saved successfully!', 'success')
-    router.push('/dashboard')
-  } catch (error) {
-    console.error('Error saving profile:', error)
-    showToast(error.message || 'Failed to save profile', 'error')
-  } finally {
-    loading.value = false
-  }
-}
-
-// Fetch profile data on mount
-onMounted(() => {
-  if (loggedIn.value) {
-    fetchProfile()
-  } else {
-    router.push('/login')
-  }
-})
-
-// Protect the page
 definePageMeta({
-  middleware: 'auth',
+  middleware: ['auth'],
   layout: 'dashboard'
 })
 </script>

@@ -4,10 +4,11 @@
       <HeadlessListboxButton
         class="relative w-64 flex items-center space-x-2 px-4 py-2 rounded-lg hover:bg-gray-50 border border-gray-200 text-gray-700"
       >
-        <span class="material-icons text-emerald-600">location_on</span>
+        <Icon name="material-symbols:location-on" class="text-emerald-600" />
         <span class="block truncate">{{ selectedLocation?.name || 'Select Location' }}</span>
-        <span class="material-icons ml-auto transition-transform duration-200" 
-              :class="{ 'rotate-180': '' }">expand_more</span>
+        <Icon name="material-symbols:expand-more" 
+              class="ml-auto transition-transform duration-200"
+              :class="{ 'rotate-180': '' }" />
       </HeadlessListboxButton>
 
       <transition
@@ -28,7 +29,7 @@
                 class="w-full px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                 @click.stop
               />
-              <span class="material-icons absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+              <Icon name="material-symbols:search" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
             </div>
           </div>
 
@@ -46,7 +47,7 @@
                   active ? 'bg-emerald-50 text-emerald-700' : 'text-gray-700',
                 ]"
               >
-                <span class="material-icons mr-2" v-if="selected">check</span>
+                <Icon name="material-symbols:check" class="mr-2" v-if="selected" />
                 <span :class="{ 'ml-6': !selected }">{{ location.name }}</span>
               </li>
             </HeadlessListboxOption>

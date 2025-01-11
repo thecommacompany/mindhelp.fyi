@@ -8,7 +8,11 @@ export default defineNuxtConfig({
     'nuxt-icon-tw',
     'nuxt-headlessui',
     '@nuxt/content',
-    'nuxt-auth-utils'
+    'nuxt-auth-utils',
+    '@pinia/colada-nuxt',
+    '@pinia/nuxt',
+    'shadcn-nuxt',
+    '@nuxtjs/color-mode'
   ],
    hub: {
     blob: true,
