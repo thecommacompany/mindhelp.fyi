@@ -233,6 +233,9 @@
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { profileSchema } from '~/schemas/profiles'
 import { useProfile } from '~/composables/useProfile'
+import { useToast } from '~/composables/useToast'
+
+const { showToast } = useToast()
 
 const {
   profile,
@@ -252,6 +255,11 @@ const formData = reactive({
   role: profile.value?.data?.role || 'user',
   phone: profile.value?.data?.phone || '',
   photoUrl: profile.value?.data?.photoUrl || '',
+  address: profile.value?.data?.address || '',
+  city: profile.value?.data?.city || '',
+  state: profile.value?.data?.state || '',
+  country: profile.value?.data?.country || '',
+  bio: profile.value?.data?.bio || '',
   isVerified: profile.value?.data?.isVerified || false
 })
 
@@ -262,6 +270,11 @@ watch(() => profile.value?.data, (newProfile) => {
     formData.role = newProfile.role || 'user'
     formData.phone = newProfile.phone || ''
     formData.photoUrl = newProfile.photoUrl || ''
+    formData.address = newProfile.address || ''
+    formData.city = newProfile.city || ''
+    formData.state = newProfile.state || ''
+    formData.country = newProfile.country || ''
+    formData.bio = newProfile.bio || ''
     formData.isVerified = newProfile.isVerified || false
   }
 }, { immediate: true })
@@ -308,12 +321,14 @@ const handleSubmit = async () => {
     const { success, error } = await submitProfile(formDataObj)
     
     if (success) {
-      console.log('Profile updated successfully')
+      showToast('Profile updated successfully', 'success')
+      await refreshProfile()
     } else {
-      console.log('Failed to save profile:', error)
+      showToast(error || 'Failed to update profile', 'error')
     }
   } catch (error) {
-    console.error('Failed to update profile:', error)
+    console.error('Error submitting form:', error)
+    showToast('An unexpected error occurred while updating profile', 'error')
   }
 }
 

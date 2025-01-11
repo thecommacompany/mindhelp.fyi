@@ -8,7 +8,10 @@ export const profileFormSchema = profileSchema.pick({
   name: true,
   role: true,
   phone: true,
-  photoUrl: true
+  photoUrl: true,
+  city: true,
+  state: true,
+  country: true
 })
 
 export const useProfile = defineQuery(() => {
@@ -36,7 +39,10 @@ export const useProfile = defineQuery(() => {
       name: formData.get('name'),
       role: formData.get('role'),
       phone: formData.get('phone') || null,
-      photoUrl: formData.get('photoUrl') || null
+      photoUrl: formData.get('photoUrl') || null,
+      city: formData.get('city') || null,
+      state: formData.get('state') || null,
+      country: formData.get('country') || null
     }
 
     const result = profileFormSchema.safeParse(dataObject)
