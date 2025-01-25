@@ -9,10 +9,11 @@
 
         <!-- Desktop Navigation -->
         <div class="hidden md:flex items-center space-x-8">
-
+            
           <NuxtLink to="/find-help" class="text-gray-600 hover:text-emerald-700 transition-colors">Find Help</NuxtLink>
           <NuxtLink to="/resources" class="text-gray-600 hover:text-emerald-700 transition-colors">Resources</NuxtLink>
           <NuxtLink to="/emergency" class="text-red-600 hover:text-red-700 transition-colors font-medium">Emergency</NuxtLink>
+          <NuxtLink v-if="user" to="/dashboard" class="text-gray-600 hover:text-emerald-700 transition-colors">Dashboard</NuxtLink>
         </div>
 
         <!-- Mobile Menu Button -->
@@ -29,10 +30,11 @@
       <!-- Mobile Menu -->
       <div v-show="isMenuOpen" class="md:hidden">
         <div class="py-4 space-y-4">
-
+         
           <NuxtLink to="/find-help" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg">Find Help</NuxtLink>
           <NuxtLink to="/resources" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg">Resources</NuxtLink>
           <NuxtLink to="/emergency" class="block px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium">Emergency</NuxtLink>
+          <NuxtLink v-if="user" to="/dashboard" class="text-gray-600 hover:text-emerald-700 transition-colors">Dashboard</NuxtLink>
         </div>
       </div>
     </nav>
@@ -41,4 +43,5 @@
 
 <script setup lang="ts">
 const isMenuOpen = ref(false)
+const { user, clear } = useUserSession()
 </script>

@@ -3,16 +3,15 @@
     <nav class="container mx-auto px-4 py-4">
       <div class="flex items-center justify-between">
         <!-- Logo -->
-        <NuxtLink to="/dashboard" class="flex items-center space-x-2">
-          <span class="text-2xl font-bold text-emerald-800">MindHelp.fyi</span>
-          <span class="text-sm text-gray-600">Dashboard</span>
-        </NuxtLink>
+        <div to="/dashboard" class="flex items-center space-x-2">
+          <NuxtLink to="/" class="text-2xl font-bold text-emerald-800">MindHelp.fyi</NuxtLink>
+          <NuxtLink to="/dashboard" class="text-sm text-gray-600">Dashboard</NuxtLink>
+        </div>
 
         <!-- Desktop Navigation -->
         <div class="hidden md:flex items-center space-x-8">
           <NuxtLink to="/dashboard" class="text-gray-600 hover:text-emerald-700 transition-colors">Overview</NuxtLink>
           <NuxtLink to="/dashboard/profile" class="text-gray-600 hover:text-emerald-700 transition-colors">Profile</NuxtLink>
-          <NuxtLink to="/dashboard/appointments" class="text-gray-600 hover:text-emerald-700 transition-colors">Appointments</NuxtLink>
           <div class="flex items-center space-x-4">
             <span class="text-sm text-gray-600">{{ user?.name }}</span>
             <button @click="clear" class="text-red-600 hover:text-red-700 transition-colors">Logout</button>
