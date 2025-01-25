@@ -1,4 +1,5 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core'
+import { sql } from 'drizzle-orm'
 
 // User roles enum
 export const UserRole = {
@@ -6,6 +7,7 @@ export const UserRole = {
   PROFESSIONAL: 'professional',
   HOSPITAL: 'hospital',
   ORGANIZATION: 'organization',
+  VOLUNTEER: 'volunteer',
   ADMIN: 'admin',
 } as const
 
@@ -49,6 +51,10 @@ export const professionals = sqliteTable('professionals', {
   isClaimable: integer('is_claimable', { mode: 'boolean' }).default(true),
   claimedBy: text('claimed_by').references(() => profiles.id), // Used when an existing profile is claimed by a professional
   verificationStatus: text('verification_status').default('pending'),
+  averageRating: real('average_rating').default(0),
+  totalReviews: integer('total_reviews').default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 })
 
 // Hospitals/Clinics table
@@ -72,6 +78,10 @@ export const hospitals = sqliteTable('hospitals', {
   isClaimable: integer('is_claimable', { mode: 'boolean' }).default(true),
   claimedBy: text('claimed_by').references(() => profiles.id),
   verificationStatus: text('verification_status').default('pending'),
+  averageRating: real('average_rating').default(0),
+  totalReviews: integer('total_reviews').default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 })
 
 // Organizations table
@@ -93,8 +103,34 @@ export const organizations = sqliteTable('organizations', {
   isClaimable: integer('is_claimable', { mode: 'boolean' }).default(true),
   claimedBy: text('claimed_by').references(() => profiles.id),
   verificationStatus: text('verification_status').default('pending'),
+  averageRating: real('average_rating').default(0),
+  totalReviews: integer('total_reviews').default(0),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(sql`(unixepoch())`),
 })
-
+// Support Groups table
+export const supportGroups = sqliteTable('support_groups', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  organizationId: text('organization_id').references(() => organizations.id),
+  description: text('description').notNull(),
+  meetingSchedule: text('meeting_schedule'),
+  address: text('address'),
+  city: text('city'),
+  state: text('state'),
+  country: text('country'),
+  latitude: real('latitude'),
+  longitude: real('longitude'),
+  onlineLink: text('online_link'),
+  contactPerson: text('contact_person'),
+  contactEmail: text('contact_email'),
+  focusArea: text('focus_area').notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+  averageRating: real('average_rating').default(0),
+  totalReviews: integer('total_reviews').default(0),
+})
 // Reviews table
 export const reviews = sqliteTable('reviews', {
   id: text('id').primaryKey(),
@@ -134,23 +170,49 @@ export const claimRequests = sqliteTable('claim_requests', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 })
 
-// Support Groups table
-export const supportGroups = sqliteTable('support_groups', {
+
+
+// Service types enum
+export const ServiceType = {
+  PSYCHIATRIST: 'psychiatrist',
+  PSYCHOLOGIST: 'psychologist',
+  THERAPIST: 'therapist',
+  COUNSELOR: 'counselor',
+  ADDICTION_COUNSELING: 'addiction-counseling',
+  CHILD_ADOLESCENT: 'child-adolescent',
+  FAMILY_COUNSELING: 'family-counseling',
+  RELATIONSHIP_COUNSELING: 'relationship-counseling',
+  GRIEF_COUNSELING: 'grief-counseling',
+  TRAUMA_COUNSELING: 'trauma-counseling',
+  SUPPORT_GROUP: 'support-group',
+  PEER_SUPPORT: 'peer-support',
+  CRISIS_HELPLINE: 'crisis-helpline',
+  EMERGENCY: 'emergency',
+} as const
+
+// Entity services table
+export const entityServices = sqliteTable('entity_services', {
   id: text('id').primaryKey(),
-  name: text('name').notNull(),
-  organizationId: text('organization_id').references(() => organizations.id),
-  description: text('description').notNull(),
-  meetingSchedule: text('meeting_schedule'),
-  address: text('address'),
-  city: text('city'),
-  state: text('state'),
-  country: text('country'),
-  latitude: real('latitude'),
-  longitude: real('longitude'),
-  onlineLink: text('online_link'),
-  contactPerson: text('contact_person'),
-  contactEmail: text('contact_email'),
-  focusArea: text('focus_area').notNull(),
+  entityType: text('entity_type', { enum: ['professional', 'hospital', 'organization'] }).notNull(),
+  entityId: text('entity_id').notNull(),
+  serviceType: text('service_type', {
+    enum: [
+      'psychiatrist',
+      'psychologist',
+      'therapist',
+      'counselor',
+      'addiction-counseling',
+      'child-adolescent',
+      'family-counseling',
+      'relationship-counseling',
+      'grief-counseling',
+      'trauma-counseling',
+      'support-group',
+      'peer-support',
+      'crisis-helpline',
+      'emergency'
+    ]
+  }).notNull(),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import type { Professional } from '../types/database'
+import { ServiceType } from '../server/database/schema'
 
 export const professionalSchema = z.object({
   id: z.string().optional(),
@@ -21,7 +22,8 @@ export const professionalSchema = z.object({
   longitude: z.number().nullable(),
   isClaimable: z.boolean(),
   claimedBy: z.string().nullable(),
-  verificationStatus: z.string().default('pending')
+  verificationStatus: z.string().default('pending'),
+  services: z.array(z.string()).default([])
 }) satisfies z.ZodType<Partial<Professional>>
 
 export type ProfessionalSchemaType = z.infer<typeof professionalSchema>

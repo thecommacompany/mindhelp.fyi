@@ -46,9 +46,15 @@ export const useProfessional = defineQuery(() => {
   })
 
   // Get a single professional by ID
-  const getProfessionalById = async (id: string) => {
-    const response = await fetch(`/api/professionals/${id}`)
-    return response
+  const getProfessionalById = (id: string) => {
+    return useQuery({
+      key: () => ['professionals', id],
+      query: async () => {
+        const response = await fetch(`/api/professionals/${id}`)
+        return response
+      },
+      enabled: !!id // Only run the query if we have an ID
+    })
   }
 
   const validateFormData = (formData: FormData): { data?: any; error?: z.ZodError } => {
@@ -172,6 +178,7 @@ export const useProfessional = defineQuery(() => {
     professionals,
     professionalsStatus,
     professionalsError,
+    getProfessionalById,
     isProfessionalsLoading,
     isProfessionalsPending,
     refreshProfessionals,
@@ -180,7 +187,6 @@ export const useProfessional = defineQuery(() => {
     createState,
     updateState,
     deleteState,
-    getProfessionalById,
     submitProfessional
   }
 })

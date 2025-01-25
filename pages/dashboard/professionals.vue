@@ -1,247 +1,48 @@
 <template>
   <div class="p-3 mx-auto py-10 min-h-[50vh]">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-3xl font-bold tracking-tight">Professionals</h2>
-      <Button @click="openCreateDialog">Add Professional</Button>
-    </div>
-
-    <div class="flex items-center py-4">
-      <Input
-        v-model="searchQuery"
-        placeholder="Search professionals..."
-        class="max-w-sm"
+ 
+    <DashboardProfessionalsDataTable 
+      :professionals="professionals" 
+      :professionalsError="professionalsError"
+      :isProfessionalsLoading="isProfessionalsLoading"
+      @edit-professional="editProfessional"
+      @delete-professional="deleteProfessional"
+      @refresh-professionals="refreshProfessionals"
+      @open-create-dialog="openCreateDialog"
       />
-    </div>
-
-    <div v-if="isProfessionalsLoading" class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-500"></div>
-    </div>
-
-    <div v-else-if="professionalsError" class="text-red-500 text-center py-12">
-      {{ professionalsError }}
-      <Button 
-        @click="refreshProfessionals" 
-        class="mt-4 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"
-      >
-        Try Again
-    </Button>
-    </div>
-
-    <div v-else class="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Profile ID</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Specialization</TableHead>
-            <TableHead>Qualifications</TableHead>
-            <TableHead>Experience</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="professional in filteredProfessionals" :key="professional.profileId">
-            <TableCell>{{ professional.profileId }}</TableCell>
-            <TableCell>{{ professional.name }}</TableCell>
-            <TableCell>{{ professional.phone }}</TableCell>
-            <TableCell>{{ professional.specialization }}</TableCell>
-            <TableCell>{{ professional.qualifications }}</TableCell>
-            <TableCell>{{ professional.experience }} years</TableCell>
-            <TableCell>
-              <Badge :variant="getStatusVariant(professional.verificationStatus)">
-                {{ professional.verificationStatus }}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <Button variant="ghost" size="icon" @click="editProfessional(professional)">
-                <Icon name="heroicons:pencil" class="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" @click="deleteProfessional(professional)">
-                <Icon name="heroicons:trash" class="h-4 w-4" />
-              </Button>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </div>
-
     <Dialog :open="isDialogOpen" @update:open="isDialogOpen = $event">
-      <DialogContent>
+      <DialogContent class="max-h-[89vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{{ isEditing ? 'Edit Professional' : 'Add Professional' }}</DialogTitle>
         </DialogHeader>
-        <form @submit.prevent="handleSubmit" class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label for="name">Name</Label>
-              <Input 
-                id="name" 
-                v-model="form.name" 
-                placeholder="e.g., Dr. John Doe"
-                required 
-              />
-              <div v-if="errors.name" class="text-red-500">{{ errors.name }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="phone">Phone</Label>
-              <Input 
-                id="phone" 
-                v-model="form.phone" 
-                placeholder="e.g., +1234567890"
-                required 
-              />
-              <div v-if="errors.phone" class="text-red-500">{{ errors.phone }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="specialization">Specialization</Label>
-              <Input 
-                id="specialization" 
-                v-model="form.specialization" 
-                placeholder="e.g., Psychiatrist, Psychologist"
-                required 
-              />
-              <div v-if="errors.specialization" class="text-red-500">{{ errors.specialization }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="qualifications">Qualifications</Label>
-              <Input 
-                id="qualifications" 
-                v-model="form.qualifications" 
-                placeholder="e.g., MD in Psychiatry, PhD in Psychology"
-                required 
-              />
-              <div v-if="errors.qualifications" class="text-red-500">{{ errors.qualifications }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="experience">Experience (years)</Label>
-              <Input 
-                id="experience" 
-                type="number" 
-                v-model="form.experience" 
-                placeholder="e.g., 5"
-              />
-              <div v-if="errors.experience" class="text-red-500">{{ errors.experience }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="licenseNumber">License Number</Label>
-              <Input 
-                id="licenseNumber" 
-                v-model="form.licenseNumber" 
-                placeholder="e.g., MCI-12345"
-              />
-              <div v-if="errors.licenseNumber" class="text-red-500">{{ errors.licenseNumber }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="languages">Languages</Label>
-              <Input 
-                id="languages" 
-                v-model="form.languages" 
-                placeholder="e.g., English, Hindi, Spanish"
-                required 
-              />
-              <div v-if="errors.languages" class="text-red-500">{{ errors.languages }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="consultationFees">Consultation Fees</Label>
-              <Input 
-                id="consultationFees" 
-                type="number" 
-                v-model="form.consultationFees" 
-                placeholder="e.g., 1000"
-              />
-              <div v-if="errors.consultationFees" class="text-red-500">{{ errors.consultationFees }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="address">Address</Label>
-              <Input 
-                id="address" 
-                v-model="form.address" 
-                placeholder="e.g., 123 Main Street, Suite 45"
-              />
-              <div v-if="errors.address" class="text-red-500">{{ errors.address }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="city">City</Label>
-              <Input 
-                id="city" 
-                v-model="form.city" 
-                placeholder="e.g., Mumbai"
-                
-              />
-              <div v-if="errors.city" class="text-red-500">{{ errors.city }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="state">State</Label>
-              <Input 
-                id="state" 
-                v-model="form.state" 
-                placeholder="e.g., Maharashtra"
-                
-              />
-              <div v-if="errors.state" class="text-red-500">{{ errors.state }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label for="country">Country</Label>
-              <Input 
-                id="country" 
-                v-model="form.country" 
-                placeholder="e.g., India"
-                
-              />
-              <div v-if="errors.country" class="text-red-500">{{ errors.country }}</div>
-            </div>
-            <div class="space-y-2">
-              <Label>Location</Label>
-              <div class="space-y-2">
-                <div class="flex items-center gap-2">
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    @click="getCurrentLocation"
-                    :disabled="isLoadingLocation"
-                  >
-                    <div class="flex items-center gap-2">
-                      <Icon 
-                        :name="isLoadingLocation ? 'heroicons:arrow-path' : 'heroicons:map-pin'" 
-                        class="w-4 h-4"
-                        :class="{ 'animate-spin': isLoadingLocation }"
-                      />
-                      {{ isLoadingLocation ? 'Getting Location...' : 'Get Current Location' }}
-                    </div>
-                  </Button>
-                </div>
-                <div v-if="locationDisplay" class="text-sm text-gray-600">
-                  {{ locationDisplay }}
-                </div>
-                <div v-if="errors.latitude || errors.longitude" class="text-red-500 text-sm">
-                  {{ errors.latitude || errors.longitude }}
-                </div>
-              </div>
-            </div>
-            <div class="space-y-2 flex items-center gap-2">
-              <Checkbox id="availableForOnline" :checked="form.availableForOnline" @update:checked="form.availableForOnline=!form.availableForOnline" />
-              <Label for="availableForOnline">Available for online</Label>
-            </div>
-            <div class="space-y-2 flex items-center gap-2">
-              <Checkbox id="isClaimable" :checked="form.isClaimable"  @update:checked="form.isClaimable=!form.isClaimable"/>
-              <Label for="isClaimable">This is not my data</Label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit">{{ isEditing ? 'Update' : 'Create' }}</Button>
-          </DialogFooter>
-        </form>
+     
+        <Tabs v-model="activeTab" class="w-full">
+          <TabsList class="grid w-full grid-cols-3">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
+          </TabsList>
+          <TabsContent value="details">
+         <DashboardProfessionalsDataTab :form="form" :isEditing="isEditing" :errors="errors" :active-tab="activeTab" :isLoadingLocation="isLoadingLocation" :locationDisplay="locationDisplay"
+         @handle-submit="activeTab = 'services'"
+         @get-current-location="getCurrentLocation"
+         />
+          </TabsContent>
+          <TabsContent value="services">
+     <DashboardProfessionalsServiceTab :ServiceType="ServiceType" :form="form" :isEditing="isEditing" @change-tab="activeTab = 'details'" @handle-submit="handleSubmit" />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
+   
   </div>
+
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import type { ProfessionalSchemaType } from '@/schemas/professionals'
 import { professionalSchema } from '@/schemas/professionals'
+import { ServiceType } from '@/server/database/schema'
 import { useProfile } from '@/composables/useProfile'
 import { useToast } from '@/composables/useToast'
 import { useProfessional } from '@/composables/useProfessional'
@@ -255,7 +56,8 @@ const {
   isProfessionalsLoading,
   isProfessionalsPending,
   refreshProfessionals,
-  submitProfessional 
+  submitProfessional,
+  getProfessionalById
 } = useProfessional()
 
 const searchQuery = ref('')
@@ -263,6 +65,7 @@ const isDialogOpen = ref(false)
 const isEditing = ref(false)
 const currentProfessional = ref<ProfessionalSchemaType | null>(null)
 const errors = ref<Record<string, string>>({})
+const activeTab = ref('details')
 
 const form = ref<ProfessionalSchemaType>({
   id: undefined,
@@ -281,10 +84,11 @@ const form = ref<ProfessionalSchemaType>({
   consultationFees: null,
   latitude: null,
   longitude: null,
-  isClaimable: false,
+  isClaimable: true,
   claimedBy: null,
   verificationStatus: 'pending',
-  profileId: null
+  profileId: null,
+  services: []
 })
 
 const locationDisplay = ref('')
@@ -345,13 +149,9 @@ watch(() => form.value.isClaimable, (newValue) => {
   }
 })
 
-// Initial load and periodic refresh
+// Initial load
 onMounted(async () => {
   await refreshProfessionals()
-  // Set up periodic refresh every 30 seconds
-  setInterval(async () => {
-    await refreshProfessionals()
-  }, 30000)
 })
 
 // Watch for changes in professionals state
@@ -383,6 +183,8 @@ function getStatusVariant(status: string): "default" | "destructive" | "secondar
       return 'outline'
   }
 }
+
+
 
 function validateForm() {
   try {
@@ -443,15 +245,22 @@ function openCreateDialog() {
     isClaimable: false,
     claimedBy: null,
     verificationStatus: 'pending',
-    profileId: null
+    profileId: null,
   }
+  let services=ref([])
   isDialogOpen.value = true
 }
-
-function editProfessional(professional: ProfessionalSchemaType) {
+const fetchedProfessional = ref<ProfessionalSchemaType | null>(null)
+async function editProfessional(professionalID: string) {
   isEditing.value = true
-  currentProfessional.value = professional
-  form.value = { ...professional }
+  // Fetch latest professional data
+  const { data: fetchedProfessional } =  getProfessionalById(professionalID)
+  watch(fetchedProfessional, (newValue) => {
+    if (newValue) {
+      form.value = { ...newValue }
+      currentProfessional.value = newValue
+    }
+  }, { immediate: true })
   isDialogOpen.value = true
 }
 
@@ -500,9 +309,14 @@ async function handleSubmit() {
       formData.append(field, form.value[field] as string)
     })
     
+    // Handle services array separately
+    if (form.value.services && Array.isArray(form.value.services)) {
+      formData.append('services', JSON.stringify(form.value.services))
+    }
+    
     // Then append optional fields that have values
     Object.entries(form.value).forEach(([key, value]) => {
-      if (!requiredFields.includes(key as any) && value !== null && value !== undefined && value !== '') {
+      if (key !== 'services' && !requiredFields.includes(key as any) && value !== null && value !== undefined && value !== '') {
         formData.append(key, value.toString())
       }
     })

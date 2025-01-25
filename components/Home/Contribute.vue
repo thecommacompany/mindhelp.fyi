@@ -11,7 +11,7 @@
           <div class="mt-12">
             <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
               <!-- Resource Contribution -->
-              <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 transition-all duration-300 hover:shadow-xl">
+              <div class="bg-white rounded-2xl shadow-md p-8 transition-transform duration-200 hover:-translate-y-1">
                 <div class="text-emerald-600">
                   <Icon name="material-symbols:library-books-outline" class="w-8 h-8" />
                 </div>
@@ -22,7 +22,7 @@
               </div>
 
               <!-- Professional Registration -->
-              <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 transition-all duration-300 hover:shadow-xl">
+              <div class="bg-white rounded-2xl shadow-md p-8 transition-transform duration-200 hover:-translate-y-1">
                 <div class="text-emerald-600">
                   <Icon name="material-symbols:psychology-outline" class="w-8 h-8" />
                 </div>
@@ -33,7 +33,7 @@
               </div>
 
               <!-- Community Support -->
-              <div class="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg p-8 transition-all duration-300 hover:shadow-xl">
+              <div class="bg-white rounded-2xl shadow-md p-8 transition-transform duration-200 hover:-translate-y-1">
                 <div class="text-emerald-600">
                   <Icon name="material-symbols:volunteer-activism-outline" class="w-8 h-8" />
                 </div>

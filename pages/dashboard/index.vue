@@ -33,16 +33,21 @@
 <script setup>
 import { onMounted } from 'vue'
 
-
 const { loggedIn, user, session, clear } = useUserSession()
 const router = useRouter()
-const { profile } = await useProfile()
 
 // Check if profile exists and redirect if needed
-onMounted(() => {
+onMounted(async () => {
   if (loggedIn.value) {
-    if (!profile.value?.data) {
-      router.push('/dashboard/profile')
+    try {
+      const { data: profile } = await useFetch('/api/profile')
+      if (!profile.value) {
+        await router.push('/dashboard/profile')
+      }
+    } catch (error) {
+      if (error.statusCode === 404) {
+        await router.push('/dashboard/profile')
+      }
     }
   }
 })

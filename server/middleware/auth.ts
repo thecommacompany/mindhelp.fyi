@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 // Define public routes that don't require authentication
 const PUBLIC_ROUTES = [
   '/api/_auth',  // This will match all auth routes including Google OAuth
-  
+  '/api/frontend/search',
   { path: '/api/hospitals', method: 'GET' },
   { path: '/api/organizations', method: 'GET' },
   { path: '/api/support-groups', method: 'GET' }
@@ -45,8 +45,8 @@ export default defineEventHandler(async (event) => {
       })
     }
 
-    // Skip profile check for profile creation endpoint
-    if (event.path === '/api/profile' && event.method === 'POST') {
+    // Skip profile check for profile-related endpoints
+    if (event.path === '/api/profile' && (event.method === 'POST' || event.method === 'GET')) {
       event.context = event.context || {}
       event.context.session = session
       return
@@ -60,10 +60,16 @@ export default defineEventHandler(async (event) => {
       .get()
 
     if (!profile) {
-      throw createError({
-        statusCode: 404,
-        message: 'Profile not found'
-      })
+      // Instead of throwing error, set session without profile
+      event.context = event.context || {}
+      event.context.session = {
+        user: session.user,
+        secure: {
+          role: null,
+          profileId: null
+        }
+      }
+      return
     }
 
     // Ensure context exists

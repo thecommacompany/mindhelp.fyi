@@ -11,7 +11,8 @@ export const profileFormSchema = profileSchema.pick({
   photoUrl: true,
   city: true,
   state: true,
-  country: true
+  country: true,
+  address: true
 })
 
 export const useProfile = defineQuery(() => {
@@ -35,18 +36,39 @@ export const useProfile = defineQuery(() => {
   })
 
   const validateFormData = (formData: FormData): { data?: any; error?: z.ZodError } => {
-    const dataObject = {
+    type DataObject = {
+      [key: string]: FormDataEntryValue | null | undefined;
+      name: FormDataEntryValue | null;
+      role: FormDataEntryValue | null;
+      phone?: FormDataEntryValue | null;
+      photoUrl?: FormDataEntryValue | null;
+      city?: FormDataEntryValue | null;
+      state?: FormDataEntryValue | null;
+      address?: FormDataEntryValue | null;
+      country?: FormDataEntryValue | null;
+    }
+
+    const dataObject: DataObject = {
       name: formData.get('name'),
       role: formData.get('role'),
-      phone: formData.get('phone') || null,
-      photoUrl: formData.get('photoUrl') || null,
-      city: formData.get('city') || null,
-      state: formData.get('state') || null,
-      country: formData.get('country') || null
+      phone: formData.get('phone') || undefined,
+      photoUrl: formData.get('photoUrl') || undefined,
+      city: formData.get('city') || undefined,
+      state: formData.get('state') || undefined,
+      address: formData.get('address') || undefined,
+      country: formData.get('country') || undefined
     }
+
+    // Remove undefined values
+    Object.keys(dataObject).forEach(key => {
+      if (dataObject[key as keyof DataObject] === undefined) {
+        delete dataObject[key as keyof DataObject]
+      }
+    })
 
     const result = profileFormSchema.safeParse(dataObject)
     if (!result.success) {
+
       return { error: result.error }
     }
     return { data: result.data }

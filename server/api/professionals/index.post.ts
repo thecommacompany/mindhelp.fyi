@@ -6,6 +6,9 @@ export default defineEventHandler(async (event) => {
   const form = await readFormData(event)
   const db = useDrizzle()
 
+  // Get services array from form
+  const services = form.get('services') ? JSON.parse(form.get('services') as string) : []
+
   // Parse form data
   const professionalData = {
     id: randomUUID(),
@@ -26,7 +29,9 @@ export default defineEventHandler(async (event) => {
     latitude: form.get('latitude') ? Number(form.get('latitude')) : null,
     longitude: form.get('longitude') ? Number(form.get('longitude')) : null,
     isClaimable: form.get('isClaimable') === 'true',
-    verificationStatus: 'pending' as const
+    verificationStatus: 'pending' as const,
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 
   console.log('Professional Data:', professionalData)
@@ -99,6 +104,23 @@ export default defineEventHandler(async (event) => {
     .values(professionalData)
     .returning()
     .get()
+
+  // Add services
+  if (services.length > 0) {
+    const serviceEntries = services.map(serviceType => ({
+      id: randomUUID(),
+      entityType: 'professional',
+      entityId: professional.id,
+      serviceType,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }))
+
+    await db.insert(tables.entityServices)
+      .values(serviceEntries)
+      .run()
+  }
 
   return professional
 })

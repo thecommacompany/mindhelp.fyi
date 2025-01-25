@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm'
-
+import { eq, and } from 'drizzle-orm'
+import { randomUUID } from 'crypto'
 export default defineEventHandler(async (event) => {
   const id = event.context.params?.id
   if (!id) {
@@ -12,6 +12,9 @@ export default defineEventHandler(async (event) => {
   const profileId = event.context.session.secure.profileId
   const form = await readFormData(event)
   const db = useDrizzle()
+
+  // Get services array from form
+  const services = form.get('services') ? JSON.parse(form.get('services') as string) : null
 
   // Parse form data
   const professionalData = {
@@ -30,7 +33,8 @@ export default defineEventHandler(async (event) => {
     country: form.get('country') as string | null,
     latitude: form.get('latitude') ? Number(form.get('latitude')) : null,
     longitude: form.get('longitude') ? Number(form.get('longitude')) : null,
-    isClaimable: form.get('isClaimable') === 'true'
+    isClaimable: form.get('isClaimable') === 'true',
+    updatedAt: new Date()
   }
 
   // Get the professional profile
@@ -76,6 +80,34 @@ export default defineEventHandler(async (event) => {
     .where(eq(tables.professionals.id, id))
     .returning()
     .get()
+
+  // Update services if provided
+  if (services !== null) {
+    // Delete existing services
+    await db.delete(tables.entityServices)
+      .where(
+        and(
+          eq(tables.entityServices.entityType, 'professional'),
+          eq(tables.entityServices.entityId, id)
+        )
+      )
+      .run()
+
+    // Add new services
+    if (services.length > 0) {
+      const serviceEntries = services.map(serviceType => ({
+        id: randomUUID(),
+        entityType: 'professional',
+        entityId: id,
+        serviceType,
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }))
+
+      await db.insert(tables.entityServices).values(serviceEntries)
+    }
+  }
 
   return updatedProfessional
 })

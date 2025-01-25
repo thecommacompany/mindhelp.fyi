@@ -7,12 +7,12 @@
             <Icon name="heroicons:check-badge" class="w-5 h-5" />
             Verified
           </div>
-          <div v-else class="absolute top-4 right-4 bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+          <div v-else-if="!isNewProfile" class="absolute top-4 right-4 bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1">
             <Icon name="heroicons:clock" class="w-5 h-5" />
             Verification Pending
           </div>
           <div class="px-6 py-8 sm:p-8">
-            <h1 class="text-3xl font-display text-gray-900 tracking-tight mb-8">Complete Your Profile</h1>
+            <h1 class="text-3xl font-display text-gray-900 tracking-tight mb-8">{{ isNewProfile ? 'Create Your Profile' : 'Update Your Profile' }}</h1>
             
             <div v-if="isProfileLoading" class="flex justify-center py-12">
               <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-500"></div>
@@ -139,36 +139,34 @@
                   <p v-if="errors.address" class="text-red-500 text-sm">{{ errors.address }}</p>
                 </div>
 
-                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div>
-                    <label for="city" class="block text-sm font-medium text-emerald-600 mb-2">City</label>
-                    <div class="relative">
-                      <input 
-                        type="text" 
-                        id="city" 
-                        v-model="formData.city"
-                        placeholder="Your city"
-                        class="w-full px-6 py-4 text-lg rounded-xl border-2 border-emerald-100 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 transition-all pl-12"
-                      />
-                      <Icon name="heroicons:building-office-2" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
-                    </div>
-                    <p v-if="errors.city" class="text-red-500 text-sm">{{ errors.city }}</p>
+                <div>
+                  <label for="city" class="block text-sm font-medium text-emerald-600 mb-2">City</label>
+                  <div class="relative">
+                    <input 
+                      type="text" 
+                      id="city" 
+                      v-model="formData.city"
+                      placeholder="Your city"
+                      class="w-full px-6 py-4 text-lg rounded-xl border-2 border-emerald-100 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 transition-all pl-12"
+                    />
+                    <Icon name="heroicons:building-office-2" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
                   </div>
+                  <p v-if="errors.city" class="text-red-500 text-sm">{{ errors.city }}</p>
+                </div>
 
-                  <div>
-                    <label for="state" class="block text-sm font-medium text-emerald-600 mb-2">State</label>
-                    <div class="relative">
-                      <input 
-                        type="text" 
-                        id="state" 
-                        v-model="formData.state"
-                        placeholder="Your state"
-                        class="w-full px-6 py-4 text-lg rounded-xl border-2 border-emerald-100 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 transition-all pl-12"
-                      />
-                      <Icon name="heroicons:map" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
-                    </div>
-                    <p v-if="errors.state" class="text-red-500 text-sm">{{ errors.state }}</p>
+                <div>
+                  <label for="state" class="block text-sm font-medium text-emerald-600 mb-2">State</label>
+                  <div class="relative">
+                    <input 
+                      type="text" 
+                      id="state" 
+                      v-model="formData.state"
+                      placeholder="Your state"
+                      class="w-full px-6 py-4 text-lg rounded-xl border-2 border-emerald-100 focus:border-emerald-300 focus:ring-2 focus:ring-emerald-200 transition-all pl-12"
+                    />
+                    <Icon name="heroicons:map" class="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-600 w-5 h-5" />
                   </div>
+                  <p v-if="errors.state" class="text-red-500 text-sm">{{ errors.state }}</p>
                 </div>
 
                 <div>
@@ -218,7 +216,7 @@
                   type="submit"
                   class="px-8 py-4 text-lg font-medium text-white bg-emerald-500 rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transform hover:-translate-y-0.5 transition-all duration-200 shadow-md hover:shadow-lg"
                 >
-                  Save Profile
+                  {{ isNewProfile ? 'Create Profile' : 'Save Profile' }}
                 </button>
               </div>
             </form>
@@ -250,17 +248,19 @@ const {
 const errors = ref({})
 const imagePreview = ref(null)
 
+const isNewProfile = computed(() => !profile.value?.data)
+
 const formData = reactive({
-  name: profile.value?.data?.name || '',
-  role: profile.value?.data?.role || 'user',
-  phone: profile.value?.data?.phone || '',
-  photoUrl: profile.value?.data?.photoUrl || '',
-  address: profile.value?.data?.address || '',
-  city: profile.value?.data?.city || '',
-  state: profile.value?.data?.state || '',
-  country: profile.value?.data?.country || '',
-  bio: profile.value?.data?.bio || '',
-  isVerified: profile.value?.data?.isVerified || false
+  name: '',
+  role: 'user',
+  phone: '',
+  photoUrl: '',
+  address: '',
+  city: '',
+  state: '',
+  country: '',
+  bio: '',
+  isVerified: false
 })
 
 // Watch for profile changes to update form data
@@ -324,6 +324,7 @@ const handleSubmit = async () => {
       showToast('Profile updated successfully', 'success')
       await refreshProfile()
     } else {
+      
       showToast(error || 'Failed to update profile', 'error')
     }
   } catch (error) {

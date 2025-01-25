@@ -29,6 +29,41 @@
       "when": 1736534989621,
       "tag": "0003_robust_red_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1736590932905,
+      "tag": "0004_far_thing",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1737702073737,
+      "tag": "0005_strong_spacker_dave",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1737702390167,
+      "tag": "0006_flaky_beyonder",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1737762557136,
+      "tag": "0007_freezing_luke_cage",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1737762566685,
+      "tag": "0008_lumpy_havok",
+      "breakpoints": true
     }
   ]
 }

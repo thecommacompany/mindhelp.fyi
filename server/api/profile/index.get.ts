@@ -20,12 +20,6 @@ export default defineEventHandler(async (event) => {
     .where(eq(tables.profiles.email, userEmail))
     .get()
 
-  if (!profile) {
-    throw createError({
-      statusCode: 404,
-      message: 'Profile not found'
-    })
-  }
-
-  return profile
+  // Return null if profile doesn't exist
+  return profile || null
 })
