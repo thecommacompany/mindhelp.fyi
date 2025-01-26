@@ -22,9 +22,18 @@
             <TabsTrigger value="services">Services</TabsTrigger>
           </TabsList>
           <TabsContent value="details">
-         <DashboardProfessionalsDataTab :form="form" :isEditing="isEditing" :errors="errors" :active-tab="activeTab" :isLoadingLocation="isLoadingLocation" :locationDisplay="locationDisplay"
-         @handle-submit="activeTab = 'services'"
-         @get-current-location="getCurrentLocation"
+         <DashboardProfessionalsDataTab 
+           :form="form" 
+           :isEditing="isEditing" 
+           :errors="errors" 
+           :active-tab="activeTab" 
+           :isLoadingLocation="isLoadingLocation" 
+           :locationDisplay="locationDisplay"
+           :showMapPicker="showMapPicker"
+           @handle-submit="activeTab = 'services'"
+           @get-current-location="getCurrentLocation"
+           @location-picked="handleLocationPicked"
+           @toggle-map-picker="showMapPicker = !showMapPicker"
          />
           </TabsContent>
           <TabsContent value="services">
@@ -93,6 +102,7 @@ const form = ref<ProfessionalSchemaType>({
 
 const locationDisplay = ref('')
 const isLoadingLocation = ref(false)
+const showMapPicker = ref(false)
 
 async function updateLocationDisplay() {
   if (form.value.latitude && form.value.longitude) {
@@ -349,6 +359,12 @@ async function handleSubmit() {
     console.error('Failed to submit professional:', error)
     showToast('An unexpected error occurred', 'error')
   }
+}
+
+function handleLocationPicked(location: { lat: number; longi: number }) {
+  form.value.latitude = location.lat
+  form.value.longitude = location.longi
+  showMapPicker.value = false
 }
 
 definePageMeta({

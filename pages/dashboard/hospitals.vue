@@ -198,49 +198,44 @@
                       @click="getCurrentLocation"
                       :disabled="isLoadingLocation"
                     >
-                      <div class="flex items-center gap-2">
-                        <Icon 
-                          :name="isLoadingLocation ? 'heroicons:arrow-path' : 'heroicons:map-pin'" 
-                          class="w-4 h-4"
-                          :class="{ 'animate-spin': isLoadingLocation }"
-                        />
-                        {{ isLoadingLocation ? 'Getting Location...' : 'Get Current Location' }}
-                      </div>
+                      <Icon 
+                        v-if="isLoadingLocation" 
+                        name="heroicons:arrow-path" 
+                        class="h-4 w-4 animate-spin" 
+                      />
+                      <Icon 
+                        v-else 
+                        name="heroicons:map-pin" 
+                        class="h-4 w-4" 
+                      />
+                      Get Current Location
+                    </Button>
+                    <Button 
+                      type="button"
+                      variant="outline"
+                      @click="showMapPicker = !showMapPicker"
+                    >
+                      <Icon 
+                        name="heroicons:map" 
+                        class="h-4 w-4 mr-2" 
+                      />
+                      {{ showMapPicker ? 'Hide Map' : 'Pick on Map' }}
                     </Button>
                   </div>
-                  <div v-if="locationDisplay" class="text-sm text-gray-600">
+                  <div v-if="showMapPicker" class="mt-4">
+                    <MapPicker @location-picked="handleLocationPicked" />
+                  </div>
+                  <div v-if="form.latitude && form.longitude && !showMapPicker" class="mt-4">
+                    <Label>Selected Location</Label>
+                    <Map 
+                      :latitude="form.latitude" 
+                      :longitude="form.longitude" 
+                    />
+                  </div>
+                  <p class="text-sm text-gray-500">
                     {{ locationDisplay }}
-                  </div>
-                  <div v-if="errors.latitude || errors.longitude" class="text-red-500 text-sm">
-                    {{ errors.latitude || errors.longitude }}
-                  </div>
+                  </p>
                 </div>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="latitude">Latitude</Label>
-                <Input 
-                  id="latitude" 
-                  v-model="form.latitude" 
-                  type="number"
-                  step="any"
-                  placeholder="e.g., 12.3456"
-                  :class="{ 'border-red-500': errors.latitude }" 
-                />
-                <p v-if="errors.latitude" class="text-sm text-red-500">{{ errors.latitude }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="longitude">Longitude</Label>
-                <Input 
-                  id="longitude" 
-                  v-model="form.longitude" 
-                  type="number"
-                  step="any"
-                  placeholder="e.g., 78.9012"
-                  :class="{ 'border-red-500': errors.longitude }" 
-                />
-                <p v-if="errors.longitude" class="text-sm text-red-500">{{ errors.longitude }}</p>
               </div>
 
               <div class="col-span-2 space-y-2">
@@ -316,6 +311,8 @@ import { useHospital } from '@/composables/useHospital'
 import { useProfile } from '@/composables/useProfile'
 import { useToast } from '@/composables/useToast'
 import { z } from 'zod'
+import MapPicker from '@/components/Dashboard/MapPicker.vue'
+import Map from '@/components/Dashboard/Map.vue'
 
 const { profile } = useProfile()
 const { showToast } = useToast()
@@ -334,6 +331,7 @@ const isEditing = ref(false)
 const currentHospital = ref<HospitalSchemaType | null>(null)
 const locationDisplay = ref('')
 const isLoadingLocation = ref(false)
+const showMapPicker = ref(false)
 
 const form = ref<HospitalSchemaType>({
   id: undefined,
@@ -408,6 +406,12 @@ async function getCurrentLocation() {
   } finally {
     isLoadingLocation.value = false
   }
+}
+
+function handleLocationPicked(location: { lat: number; longi: number }) {
+  form.value.latitude = location.lat
+  form.value.longitude = location.longi
+  showMapPicker.value = false
 }
 
 // Watch for changes in latitude/longitude

@@ -1,5 +1,5 @@
 import { eq, and } from 'drizzle-orm'
-
+import { randomUUID } from 'crypto'
 export default defineEventHandler(async (event) => {
   const id = event.context.params?.id
   if (!id) {
@@ -73,30 +73,30 @@ export default defineEventHandler(async (event) => {
     Object.entries(hospitalData).filter(([_, value]) => value !== undefined)
   )
 
-  // Start transaction
-  return await db.transaction(async (tx) => {
-    // Update hospital entry
-    const updatedHospital = await tx.update(tables.hospitals)
+  try {
+    // Update hospital first to get the result
+    const updatedHospital = await db.update(tables.hospitals)
       .set(updateData)
       .where(eq(tables.hospitals.id, id))
       .returning()
       .get()
 
-    // Update services if provided
+    // Prepare batch operations for services if needed
     if (services !== null) {
-      // Delete existing services
-      await tx.delete(tables.entityServices)
-        .where(
-          and(
-            eq(tables.entityServices.entityType, 'hospital'),
-            eq(tables.entityServices.entityId, id)
+      const batchOps = [
+        // Delete existing services
+        db.delete(tables.entityServices)
+          .where(
+            and(
+              eq(tables.entityServices.entityType, 'hospital'),
+              eq(tables.entityServices.entityId, id)
+            )
           )
-        )
-        .run()
+      ]
 
-      // Add new services
+      // Add new services if any
       if (services.length > 0) {
-        const serviceEntries = services.map(serviceType => ({
+        const serviceEntries = services.map((serviceType: string) => ({
           id: randomUUID(),
           entityType: 'hospital',
           entityId: id,
@@ -106,10 +106,21 @@ export default defineEventHandler(async (event) => {
           updatedAt: new Date()
         }))
 
-        await tx.insert(tables.entityServices).values(serviceEntries)
+        batchOps.push(
+          db.insert(tables.entityServices).values(serviceEntries)
+        )
       }
+
+      // Execute batch operations
+      await db.batch(batchOps)
     }
 
     return updatedHospital
-  })
+  } catch (error: any) {
+    console.error('Database operation error:', error)
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to update hospital profile. Please try again.'
+    })
+  }
 })

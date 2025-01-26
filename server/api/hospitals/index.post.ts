@@ -101,14 +101,16 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  // Start a transaction
-  return await db.transaction(async (tx) => {
-    // Create hospital
-    const hospital = await tx.insert(tables.hospitals).values(hospitalData).returning().get()
+  try {
+    // Create hospital first
+    const hospital = await db.insert(tables.hospitals)
+      .values(hospitalData)
+      .returning()
+      .get()
 
-    // Create service entries
+    // Handle additional operations sequentially since we can't guarantee batch array requirements
     if (services.length > 0) {
-      const serviceEntries = services.map(serviceType => ({
+      const serviceEntries = services.map((serviceType: string) => ({
         id: randomUUID(),
         entityType: 'hospital',
         entityId: hospital.id,
@@ -118,17 +120,25 @@ export default defineEventHandler(async (event) => {
         updatedAt: new Date()
       }))
 
-      await tx.insert(tables.entityServices).values(serviceEntries)
+      await db.insert(tables.entityServices)
+        .values(serviceEntries)
+        .run()
     }
 
-    // Update profile role if not already a hospital
+    // Update profile role if needed
     if (profile.role !== 'hospital') {
-      await tx.update(tables.profiles)
+      await db.update(tables.profiles)
         .set({ role: 'hospital' })
         .where(eq(tables.profiles.id, profile.id))
         .run()
     }
-
+    
     return hospital
-  })
+  } catch (error: any) {
+    console.error('Database operation error:', error)
+    throw createError({
+      statusCode: 500,
+      message: 'Failed to create hospital profile. Please try again.'
+    })
+  }
 })

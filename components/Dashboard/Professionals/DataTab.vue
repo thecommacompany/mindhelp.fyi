@@ -129,19 +129,43 @@
                         @click="$emit('getCurrentLocation')"
                         :disabled="isLoadingLocation"
                       >
-                        <div class="flex items-center gap-3">
-                          <Icon 
-                            :name="isLoadingLocation ? 'heroicons:arrow-path' : 'heroicons:map-pin'" 
-                            class="w-5 h-4"
-                            :class="{ 'animate-spin': isLoadingLocation }"
-                          />
-                          {{ isLoadingLocation ? 'Getting Location...' : 'Get Current Location' }}
-                        </div>
+                        <Icon 
+                          v-if="isLoadingLocation" 
+                          name="heroicons:arrow-path" 
+                          class="h-4 w-4 animate-spin" 
+                        />
+                        <Icon 
+                          v-else 
+                          name="heroicons:map-pin" 
+                          class="h-4 w-4" 
+                        />
+                        Get Current Location
+                      </Button>
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        @click="$emit('toggleMapPicker')"
+                      >
+                        <Icon 
+                          name="heroicons:map" 
+                          class="h-4 w-4 mr-2" 
+                        />
+                        {{ showMapPicker ? 'Hide Map' : 'Pick on Map' }}
                       </Button>
                     </div>
-                    <div v-if="locationDisplay" class="text-sm text-gray-601">
-                      {{ locationDisplay }}
+                    <div v-if="showMapPicker" class="mt-4">
+                      <MapPicker @location-picked="$emit('locationPicked', $event)" />
                     </div>
+                    <div v-if="form.latitude && form.longitude && !showMapPicker" class="mt-4">
+                      <Label>Selected Location</Label>
+                      <Map 
+                        :latitude="form.latitude" 
+                        :longitude="form.longitude" 
+                      />
+                    </div>
+                    <p class="text-sm text-gray-500">
+                      {{ locationDisplay }}
+                    </p>
                     <div v-if="errors.latitude || errors.longitude" class="text-red-501 text-sm">
                       {{ errors.latitude || errors.longitude }}
                     </div>
@@ -164,6 +188,9 @@
 </div>
 </template>
 <script setup lang="ts">
+import MapPicker from '@/components/Dashboard/MapPicker.vue'
+import Map from '@/components/Dashboard/Map.vue'
+
 defineProps({
   form: {
     type: Object,
@@ -184,8 +211,12 @@ defineProps({
   locationDisplay: {
     type: String,
     required: true
+  },
+  showMapPicker: {
+    type: Boolean,
+    required: true
   }
 })
 
-defineEmits([ 'getCurrentLocation', 'handleSubmit'])
+defineEmits(['getCurrentLocation', 'handleSubmit', 'locationPicked', 'toggleMapPicker'])
 </script>
