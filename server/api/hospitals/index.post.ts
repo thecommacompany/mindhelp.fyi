@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
     latitude: form.get('latitude') ? Number(form.get('latitude')) : null,
     longitude: form.get('longitude') ? Number(form.get('longitude')) : null,
     isClaimable: form.get('isClaimable') === 'true',
+    claimedBy: form.get('isClaimable') === 'true' ? null : profileId,
     verificationStatus: 'pending' as const,
     createdAt: new Date(),
     updatedAt: new Date()
@@ -102,15 +103,15 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    // Create hospital first
+    // Create hospital entry
     const hospital = await db.insert(tables.hospitals)
       .values(hospitalData)
       .returning()
       .get()
 
-    // Handle additional operations sequentially since we can't guarantee batch array requirements
+    // Add services
     if (services.length > 0) {
-      const serviceEntries = services.map((serviceType: string) => ({
+      const serviceEntries = services.map(serviceType => ({
         id: randomUUID(),
         entityType: 'hospital',
         entityId: hospital.id,

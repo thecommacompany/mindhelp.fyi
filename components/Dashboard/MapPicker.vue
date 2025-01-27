@@ -53,10 +53,11 @@ const emit = defineEmits(['location-picked'])
 </script>
 
 <template>
-  <div ref="mapPickerElement" style="height: 300px; width: 300px" />
-  <div class="flex justify-end">
-    <Button @click="$emit('location-picked', location)">Set Location</Button>
+     <div class=" py-2">
+    <Button @click="$emit('location-picked', location)" variant="ghost" class="bg-emerald-500 text-white hover:bg-emerald-600 hover:text-white"><Icon name="heroicons:check" class="h-4 w-4 mr-2" />Set Location</Button>
   </div>
+  <div ref="mapPickerElement" style="height: 300px; width: 300px" />
+ 
 </template>
 
 <style>

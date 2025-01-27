@@ -24,7 +24,7 @@
     </div>
 
     <div class="form-group">
-      <LocationSearchPhoton v-model="selectedLocation" placeholder="Enter location" />
+      <LocationSearchPhoton v-model="selectedLocation" :latitude="initialLocation?.latitude" :longitude="initialLocation?.longitude" placeholder="Enter location" />
     </div>
 
     <div class="form-group">
@@ -55,17 +55,17 @@ interface SearchForm {
 interface Props {
   initialValues?: Partial<SearchForm>
   initialLocation?: {
-    lat: number
-    lng: number
+    latitude: number
+    longitude: number
     display: string
-  }
+  } | undefined
 }
 
 const props = defineProps<Props>()
 
 const selectedLocation = ref(props.initialLocation || {
-  lat: 0,
-  lng: 0,
+  latitude: 0,
+  longitude: 0,
   display: ''
 })
 
@@ -107,9 +107,9 @@ const formatServiceType = (value: string) => {
 
 const handleSubmit = () => {
   console.log(selectedLocation.value)
-  if (selectedLocation.value.lat && selectedLocation.value.lng) {
-    form.value.latitude = selectedLocation.value.lat
-    form.value.longitude = selectedLocation.value.lng
+  if (selectedLocation.value.latitude && selectedLocation.value.longitude) {
+    form.value.latitude = selectedLocation.value.latitude
+    form.value.longitude = selectedLocation.value.longitude
    
   }
   emit('submitSearch', { ...form.value })
@@ -123,7 +123,7 @@ const handleSubmit = () => {
   flex-direction: column;
   gap: 1rem;
 
-  background: #FFF8EA;
+
   border-radius: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }

@@ -26,11 +26,16 @@
 
 <script setup>
 const { loggedIn } = useUserSession()
-
+const route=useRoute()
 // Redirect to dashboard if already logged in
 watchEffect(() => {
   if (loggedIn.value) {
-    navigateTo('/dashboard')
+    const { redirect } = route.query
+    if (redirect) {
+      navigateTo(redirect)
+    }else{
+      navigateTo('/dashboard')
+    }
   }
 })
 </script>

@@ -68,35 +68,29 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Filter out undefined values to only update provided fields
-  const updateData = Object.fromEntries(
-    Object.entries(hospitalData).filter(([_, value]) => value !== undefined)
-  )
-
   try {
-    // Update hospital first to get the result
+    // Update hospital data
     const updatedHospital = await db.update(tables.hospitals)
-      .set(updateData)
+      .set(hospitalData)
       .where(eq(tables.hospitals.id, id))
       .returning()
       .get()
 
-    // Prepare batch operations for services if needed
+    // Update services if provided
     if (services !== null) {
-      const batchOps = [
-        // Delete existing services
-        db.delete(tables.entityServices)
-          .where(
-            and(
-              eq(tables.entityServices.entityType, 'hospital'),
-              eq(tables.entityServices.entityId, id)
-            )
+      // Delete existing services
+      await db.delete(tables.entityServices)
+        .where(
+          and(
+            eq(tables.entityServices.entityType, 'hospital'),
+            eq(tables.entityServices.entityId, id)
           )
-      ]
+        )
+        .run()
 
-      // Add new services if any
+      // Add new services
       if (services.length > 0) {
-        const serviceEntries = services.map((serviceType: string) => ({
+        const serviceEntries = services.map(serviceType => ({
           id: randomUUID(),
           entityType: 'hospital',
           entityId: id,
@@ -106,13 +100,10 @@ export default defineEventHandler(async (event) => {
           updatedAt: new Date()
         }))
 
-        batchOps.push(
-          db.insert(tables.entityServices).values(serviceEntries)
-        )
+        await db.insert(tables.entityServices)
+          .values(serviceEntries)
+          .run()
       }
-
-      // Execute batch operations
-      await db.batch(batchOps)
     }
 
     return updatedHospital

@@ -1,304 +1,51 @@
 <template>
   <div class="p-3 mx-auto py-10 min-h-[50vh]">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-3xl font-bold tracking-tight">Hospitals</h2>
-      <Button @click="openCreateDialog">Add Hospital</Button>
-    </div>
-
-    <div class="flex items-center py-4">
-      <Input
-        placeholder="Search hospitals..."
-        class="max-w-sm"
-        v-model="searchQuery"
-      />
-    </div>
-
-    <div v-if="isHospitalsLoading" class="flex justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-emerald-200 border-t-emerald-500"></div>
-    </div>
-
-    <div v-else-if="hospitalsError" class="text-red-500 text-center py-12">
-      {{ hospitalsError }}
-      <Button 
-        @click="refreshHospitals" 
-        class="mt-4 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100"
-      >
-        Try Again
-      </Button>
-    </div>
-
-    <div v-else-if="!filteredHospitals?.length" class="text-center py-12 text-gray-500">
-      No hospitals found. Click "Add Hospital" to create one.
-    </div>
-
-    <div v-else class="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Phone</TableHead>
-            <TableHead>Location</TableHead>
-            <TableHead>Emergency Services</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          <TableRow v-for="hospital in filteredHospitals" :key="hospital?.id">
-            <TableCell>{{ hospital?.name || '-' }}</TableCell>
-            <TableCell>{{ hospital?.type || '-' }}</TableCell>
-            <TableCell>{{ hospital?.phone || '-' }}</TableCell>
-            <TableCell>{{ hospital?.city ? `${hospital.city}, ${hospital.state || ''}` : '-' }}</TableCell>
-            <TableCell>{{ hospital?.emergencyServices ? 'Available' : 'Not Available' }}</TableCell>
-            <TableCell>
-              <Badge :variant="getStatusVariant(hospital?.verificationStatus || '')">
-                {{ hospital?.verificationStatus || 'pending' }}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <div class="flex items-center gap-2">
-                <Button variant="ghost" size="icon" @click="editHospital(hospital)">
-                  <Icon name="heroicons:pencil" class="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" @click="deleteHospital(hospital)">
-                  <Icon name="heroicons:trash" class="h-4 w-4" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </div>
-
+    <DashboardHosptialsDataTable 
+      :hospitals="hospitals?.data || []" 
+      :hospitalsError="hospitalsError"
+      :isHospitalsLoading="isHospitalsLoading"
+      @edit-hospital="editHospital"
+      @delete-hospital="deleteHospital"
+      @refresh-hospitals="refreshHospitals"
+      @open-create-dialog="openCreateDialog"
+    />
+    
     <Dialog :open="isDialogOpen" @update:open="isDialogOpen = $event">
-      <DialogContent class="max-h-[90vh] overflow-y-auto">
+      <DialogContent class="max-h-[89vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{{ isEditing ? 'Edit Hospital' : 'Add Hospital' }}</DialogTitle>
         </DialogHeader>
-        <form @submit.prevent="handleSubmit" class="space-y-6">
-          <!-- Basic Information -->
-          <div class="space-y-4">
-            <h3 class="font-semibold text-lg">Basic Information</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label for="name">Name</Label>
-                <Input 
-                  id="name" 
-                  v-model="form.name" 
-                  placeholder="e.g., City General Hospital"
-                  :class="{ 'border-red-500': errors.name }" 
-                />
-                <p v-if="errors.name" class="text-sm text-red-500">{{ errors.name }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="type">Type</Label>
-                <Select v-model="form.type" :class="{ 'border-red-500': errors.type }">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select hospital type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="General">General Hospital</SelectItem>
-                    <SelectItem value="Specialty">Specialty Hospital</SelectItem>
-                    <SelectItem value="Teaching">Teaching Hospital</SelectItem>
-                    <SelectItem value="Community">Community Hospital</SelectItem>
-                    <SelectItem value="Rehabilitation">Rehabilitation Center</SelectItem>
-                    <SelectItem value="Mental Health">Mental Health Facility</SelectItem>
-                    <SelectItem value="Children">Children's Hospital</SelectItem>
-                    <SelectItem value="Cancer">Cancer Center</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p v-if="errors.type" class="text-sm text-red-500">{{ errors.type }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="phone">Phone</Label>
-                <Input 
-                  id="phone" 
-                  v-model="form.phone" 
-                  placeholder="e.g., +91 1234567890"
-                  :class="{ 'border-red-500': errors.phone }" 
-                />
-                <p v-if="errors.phone" class="text-sm text-red-500">{{ errors.phone }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="website">Website</Label>
-                <Input 
-                  id="website" 
-                  v-model="form.website" 
-                  placeholder="e.g., https://www.hospital.com"
-                  :class="{ 'border-red-500': errors.website }" 
-                />
-                <p v-if="errors.website" class="text-sm text-red-500">{{ errors.website }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Services & Facilities -->
-          <div class="space-y-4">
-            <h3 class="font-semibold text-lg">Services & Facilities</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label for="facilities">Facilities</Label>
-                <Textarea 
-                  id="facilities" 
-                  v-model="form.facilities" 
-                  placeholder="e.g., ICU, Operation Theater, X-Ray, etc."
-                  :class="{ 'border-red-500': errors.facilities }" 
-                />
-                <p v-if="errors.facilities" class="text-sm text-red-500">{{ errors.facilities }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="openingHours">Opening Hours</Label>
-                <Input 
-                  id="openingHours" 
-                  v-model="form.openingHours" 
-                  placeholder="e.g., 24/7 or Mon-Sat 9AM-6PM"
-                  :class="{ 'border-red-500': errors.openingHours }" 
-                />
-                <p v-if="errors.openingHours" class="text-sm text-red-500">{{ errors.openingHours }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="accreditation">Accreditation</Label>
-                <Input 
-                  id="accreditation" 
-                  v-model="form.accreditation" 
-                  placeholder="e.g., NABH, JCI"
-                  :class="{ 'border-red-500': errors.accreditation }" 
-                />
-                <p v-if="errors.accreditation" class="text-sm text-red-500">{{ errors.accreditation }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label>Emergency Services</Label>
-                <div class="flex items-center space-x-2 pt-2">
-                  <Checkbox id="emergencyServices" :checked="form.emergencyServices" @update:checked="form.emergencyServices=!form.emergencyServices" />
-                  <Label for="emergencyServices">24/7 Emergency Services Available</Label>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Location Information -->
-          <div class="space-y-4">
-            <h3 class="font-semibold text-lg">Location Information</h3>
-            <div class="grid grid-cols-2 gap-4">
-              <div class="col-span-2 space-y-2">
-                <Label>Current Location</Label>
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      @click="getCurrentLocation"
-                      :disabled="isLoadingLocation"
-                    >
-                      <Icon 
-                        v-if="isLoadingLocation" 
-                        name="heroicons:arrow-path" 
-                        class="h-4 w-4 animate-spin" 
-                      />
-                      <Icon 
-                        v-else 
-                        name="heroicons:map-pin" 
-                        class="h-4 w-4" 
-                      />
-                      Get Current Location
-                    </Button>
-                    <Button 
-                      type="button"
-                      variant="outline"
-                      @click="showMapPicker = !showMapPicker"
-                    >
-                      <Icon 
-                        name="heroicons:map" 
-                        class="h-4 w-4 mr-2" 
-                      />
-                      {{ showMapPicker ? 'Hide Map' : 'Pick on Map' }}
-                    </Button>
-                  </div>
-                  <div v-if="showMapPicker" class="mt-4">
-                    <MapPicker @location-picked="handleLocationPicked" />
-                  </div>
-                  <div v-if="form.latitude && form.longitude && !showMapPicker" class="mt-4">
-                    <Label>Selected Location</Label>
-                    <Map 
-                      :latitude="form.latitude" 
-                      :longitude="form.longitude" 
-                    />
-                  </div>
-                  <p class="text-sm text-gray-500">
-                    {{ locationDisplay }}
-                  </p>
-                </div>
-              </div>
-
-              <div class="col-span-2 space-y-2">
-                <Label for="address">Address</Label>
-                <Textarea 
-                  id="address" 
-                  v-model="form.address" 
-                  placeholder="e.g., 123 Healthcare Avenue, Medical District"
-                  :class="{ 'border-red-500': errors.address }" 
-                />
-                <p v-if="errors.address" class="text-sm text-red-500">{{ errors.address }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="city">City</Label>
-                <Input 
-                  id="city" 
-                  v-model="form.city" 
-                  placeholder="e.g., Mumbai"
-                  :class="{ 'border-red-500': errors.city }" 
-                />
-                <p v-if="errors.city" class="text-sm text-red-500">{{ errors.city }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="state">State</Label>
-                <Input 
-                  id="state" 
-                  v-model="form.state" 
-                  placeholder="e.g., Maharashtra"
-                  :class="{ 'border-red-500': errors.state }" 
-                />
-                <p v-if="errors.state" class="text-sm text-red-500">{{ errors.state }}</p>
-              </div>
-
-              <div class="space-y-2">
-                <Label for="country">Country</Label>
-                <Input 
-                  id="country" 
-                  v-model="form.country" 
-                  placeholder="e.g., India"
-                  :class="{ 'border-red-500': errors.country }" 
-                />
-                <p v-if="errors.country" class="text-sm text-red-500">{{ errors.country }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Additional Settings -->
-          <div class="space-y-4">
-            <h3 class="font-semibold text-lg">Additional Settings</h3>
-            <div class="space-y-2">
-              <div class="flex items-center space-x-2">
-                <Checkbox id="isClaimable" :checked="form.isClaimable" @update:checked="form.isClaimable=!form.isClaimable" />
-                <Label for="isClaimable">Allow others to claim this hospital</Label>
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button type="submit">{{ isEditing ? 'Update' : 'Create' }}</Button>
-          </DialogFooter>
-        </form>
+        
+        <Tabs v-model="activeTab" class="w-full">
+          <TabsList class="grid w-full grid-cols-2">
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="services">Services</TabsTrigger>
+          </TabsList>
+          <TabsContent value="details">
+            <DashboardHosptialsDataTab 
+              :form="form" 
+              :isEditing="isEditing" 
+              :errors="errors" 
+              :active-tab="activeTab" 
+              :isLoadingLocation="isLoadingLocation" 
+              :locationDisplay="locationDisplay"
+              :showMapPicker="showMapPicker"
+              @handle-submit="activeTab = 'services'"
+              @get-current-location="getCurrentLocation"
+              @location-picked="handleLocationPicked"
+              @toggle-map-picker="showMapPicker = !showMapPicker"
+            />
+          </TabsContent>
+          <TabsContent value="services">
+            <DashboardHosptialsServiceTab 
+              :ServiceType="ServiceType" 
+              :form="form" 
+              :isEditing="isEditing" 
+              @change-tab="activeTab = 'details'" 
+              @handle-submit="handleSubmit" 
+            />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   </div>
@@ -313,6 +60,7 @@ import { useToast } from '@/composables/useToast'
 import { z } from 'zod'
 import MapPicker from '@/components/Dashboard/MapPicker.vue'
 import Map from '@/components/Dashboard/Map.vue'
+import { ServiceType } from '@/server/database/schema'
 
 const { profile } = useProfile()
 const { showToast } = useToast()
@@ -322,7 +70,8 @@ const {
   hospitalsError,
   isHospitalsLoading,
   refreshHospitals,
-  submitHospital
+  submitHospital,
+  getHospitalById
 } = useHospital()
 
 const searchQuery = ref('')
@@ -332,27 +81,27 @@ const currentHospital = ref<HospitalSchemaType | null>(null)
 const locationDisplay = ref('')
 const isLoadingLocation = ref(false)
 const showMapPicker = ref(false)
+const activeTab = ref('details')
 
 const form = ref<HospitalSchemaType>({
   id: undefined,
   name: '',
-  phone: '',
   type: '',
-  facilities: undefined,
+  phone: '',
+  email: '',
+  website: '',
   emergencyServices: false,
-  accreditation: undefined,
-  website: null,
-  openingHours: undefined,
-  address: '',
-  city: '',
-  state: '',
-  country: '',
-  latitude: 0,
-  longitude: 0,
+  address: null,
+  city: null,
+  state: null,
+  country: null,
+  latitude: null,
+  longitude: null,
   isClaimable: true,
-  claimedBy: undefined,
+  claimedBy: null,
   verificationStatus: 'pending',
-  profileId: undefined
+  profileId: null,
+  services: []
 })
 
 const errors = ref<Record<string, string>>({})
@@ -459,19 +208,39 @@ function getStatusVariant(status: string): "default" | "destructive" | "secondar
 }
 
 function validateForm() {
-  const result = hospitalSchema.safeParse(form.value)
-  if (!result.success) {
-    const formattedErrors: Record<string, string> = {}
-    result.error.errors.forEach((err) => {
-      if (err.path) {
-        formattedErrors[err.path[0]] = err.message
-      }
-    })
-    errors.value = formattedErrors
+  try {
+    const formData = { ...form.value }
+    
+    // Convert string numbers to actual numbers
+    if (formData.latitude) {
+      formData.latitude = Number(formData.latitude)
+    }
+    if (formData.longitude) {
+      formData.longitude = Number(formData.longitude)
+    }
+
+    // Validate using Zod schema
+    const result = hospitalSchema.safeParse(formData)
+    
+    if (!result.success) {
+      errors.value = {}
+      result.error.errors.forEach((error) => {
+        if (error.path) {
+          errors.value[error.path[0]] = error.message
+        }
+      })
+      showToast('Please fix the validation errors', 'error')
+      console.log('Validation errors:', errors.value)
+      return false
+    }
+    
+    errors.value = {}
+    return true
+  } catch (error) {
+    console.error('Validation error:', error)
+    showToast('An error occurred during validation', 'error')
     return false
   }
-  errors.value = {}
-  return true
 }
 
 async function handleSubmit() {
@@ -481,14 +250,8 @@ async function handleSubmit() {
     }
 
     // Check required fields
-    const requiredFields = ['name', 'phone', 'type', 'address', 'city', 'state', 'country', 'latitude', 'longitude'] as const
-    const missingFields = requiredFields.filter(field => {
-      const value = form.value[field]
-      if (typeof value === 'number') {
-        return isNaN(value)
-      }
-      return !value
-    })
+    const requiredFields = ['name', 'type', 'phone'] as const
+    const missingFields = requiredFields.filter(field => !form.value[field])
     
     if (missingFields.length > 0) {
       showToast(`Please fill in all required fields: ${missingFields.join(', ')}`, 'error')
@@ -499,16 +262,22 @@ async function handleSubmit() {
     
     // First append all required fields
     requiredFields.forEach(field => {
-      const value = form.value[field]
-      formData.append(field, value.toString())
+      formData.append(field, form.value[field] as string)
     })
+    
+    // Handle services array separately
+    if (form.value.services && Array.isArray(form.value.services)) {
+      formData.append('services', JSON.stringify(form.value.services))
+    }
     
     // Then append optional fields that have values
     Object.entries(form.value).forEach(([key, value]) => {
-      if (!requiredFields.includes(key as any) && value !== undefined) {
-        if (typeof value === 'boolean') {
+      if (key !== 'services' && !requiredFields.includes(key as any) && value !== null && value !== undefined && value !== '') {
+        if (key === 'isClaimable') {
+          formData.append(key, String(value))
+        } else if (typeof value === 'boolean') {
           formData.append(key, value.toString())
-        } else if (value !== null && value !== '') {
+        } else {
           formData.append(key, value.toString())
         }
       }
@@ -548,15 +317,14 @@ async function handleSubmit() {
 
 function resetForm() {
   form.value = {
-    id: undefined,
     name: '',
     phone: '',
     type: '',
-    facilities: undefined,
+    facilities: '',
     emergencyServices: false,
-    accreditation: undefined,
-    website: null,
-    openingHours: undefined,
+    accreditation: '',
+    website: '',
+    openingHours: '',
     address: '',
     city: '',
     state: '',
@@ -566,7 +334,8 @@ function resetForm() {
     isClaimable: true,
     claimedBy: undefined,
     verificationStatus: 'pending',
-    profileId: undefined
+    profileId: undefined,
+    services: []
   }
 }
 
@@ -580,22 +349,21 @@ function openCreateDialog() {
 
 function editHospital(hospital: HospitalSchemaType) {
   isEditing.value = true
-  currentHospital.value = hospital
-  form.value = {
-    ...hospital,
-    emergencyServices: hospital.emergencyServices ?? false,
-    isClaimable: hospital.isClaimable ?? true,
-    verificationStatus: hospital.verificationStatus ?? 'pending',
-    facilities: hospital.facilities ?? undefined,
-    accreditation: hospital.accreditation ?? undefined,
-    website: hospital.website ?? null,
-    openingHours: hospital.openingHours ?? undefined,
-    latitude: hospital.latitude ?? 0,
-    longitude: hospital.longitude ?? 0,
-    claimedBy: hospital.claimedBy ?? undefined,
-    profileId: hospital.profileId ?? undefined
-  }
-  
+  // Fetch latest hospital data
+  const { data: fetchedHospital } = getHospitalById(hospital.id!)
+  watch(fetchedHospital, (newValue) => {
+    if (newValue) {
+      form.value = {
+        ...newValue,
+        facilities: newValue.facilities || '',
+        accreditation: newValue.accreditation || '',
+        website: newValue.website || '',
+        openingHours: newValue.openingHours || '',
+        services: newValue.services || []
+      }
+      currentHospital.value = newValue
+    }
+  }, { immediate: true })
   isDialogOpen.value = true
   updateLocationDisplay()
 }

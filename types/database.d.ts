@@ -38,6 +38,8 @@ export interface Professional {
   isClaimable: boolean;
   claimedBy?: string;
   verificationStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Hospital {
@@ -60,6 +62,8 @@ export interface Hospital {
   isClaimable: boolean;
   claimedBy?: string;
   verificationStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Organization {
@@ -80,6 +84,8 @@ export interface Organization {
   isClaimable: boolean;
   claimedBy?: string;
   verificationStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface Review {

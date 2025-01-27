@@ -171,7 +171,11 @@
                     </div>
                   </div>
                 </div>
-                <div class="space-y-3 flex items-center gap-x-2">
+           
+            
+              </div>
+              <div>
+                  <div class="space-y-3 flex items-center gap-x-2">
                   <Checkbox id="availableForOnline" :checked="form.availableForOnline" @update:checked="form.availableForOnline=!form.availableForOnline" />
                   <Label for="availableForOnline">Available for online</Label>
                 </div>
@@ -180,8 +184,7 @@
                   <Label for="isClaimable">Allow others to claim this profile</Label>
                   
                 </div>
-                
-              </div>
+                </div>
               <DialogFooter>
                 <Button @click="$emit('handleSubmit')">Next</Button>
               </DialogFooter>

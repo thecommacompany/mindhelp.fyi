@@ -1,6 +1,6 @@
 <template>
   <section class="py-16">
-    <div class="max-w-7xl p-5 mx-auto">
+    <div class="max-w-7xl p-5 mx-auto bg-[#FFF8EA]">
       <div class="">
      <SearchForm @submit-search="handleSearch" />
       </div>
@@ -9,8 +9,8 @@
 </template>
 
 <script setup lang="ts">
-
-const handleSearch = async (form) => {
+import type { SearchParams } from '@/types/search'
+const handleSearch = async (form: SearchParams) => {
   await navigateTo({
     path: '/searchresult',
     query: {

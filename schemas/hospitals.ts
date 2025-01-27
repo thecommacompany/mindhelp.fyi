@@ -18,7 +18,7 @@ export const hospitalSchema = z.object({
   latitude: z.number().min(-90, 'Latitude must be between -90 and 90').max(90, 'Latitude must be between -90 and 90'),
   longitude: z.number().min(-180, 'Longitude must be between -180 and 180').max(180, 'Longitude must be between -180 and 180'),
   isClaimable: z.boolean().default(true),
-  claimedBy: z.string().optional(),
+  claimedBy: z.string().nullable(),
   verificationStatus: z.enum(['pending', 'verified', 'rejected']).default('pending'),
   profileId: z.string().optional()
 }) satisfies z.ZodType<Partial<Hospital>>

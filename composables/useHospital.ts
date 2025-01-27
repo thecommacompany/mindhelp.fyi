@@ -26,9 +26,15 @@ export const useHospital = defineQuery(() => {
   })
 
   // Get a single hospital by ID
-  const getHospitalById = async (id: string) => {
-    const response = await fetch(`/api/hospitals/${id}`)
-    return response
+  const getHospitalById = (id: string) => {
+    return useQuery({
+      key: () => ['hospitals', id],
+      query: async () => {
+        const response = await fetch(`/api/hospitals/${id}`)
+        return response
+      },
+      enabled: !!id // Only run the query if we have an ID
+    })
   }
 
   const validateFormData = (formData: FormData): { data?: any; error?: z.ZodError } => {
@@ -48,12 +54,14 @@ export const useHospital = defineQuery(() => {
       latitude: formData.get('latitude') ? Number(formData.get('latitude')) : undefined,
       longitude: formData.get('longitude') ? Number(formData.get('longitude')) : undefined,
       isClaimable: formData.get('isClaimable') === 'true',
-      claimedBy: formData.get('claimedBy') || undefined,
-      verificationStatus: formData.get('verificationStatus') || 'pending'
+      claimedBy: formData.get('claimedBy') || null,
+      verificationStatus: formData.get('verificationStatus') || 'pending',
+      services: formData.get('services') ? JSON.parse(formData.get('services') as string) : []
     }
 
     const result = hospitalSchema.safeParse(dataObject)
     if (!result.success) {
+      console.log(result.error)
       return { error: result.error }
     }
     return { data: result.data }
@@ -122,13 +130,21 @@ export const useHospital = defineQuery(() => {
         case 'POST':
           response = await createHospital({ formData })
           break
-        case 'PATCH':
+        case 'PATCH': {
           const id = formData.get('id') as string
           if (!id) {
             return { success: false, error: 'Hospital ID is required for update' }
           }
-          response = await updateHospital({ id, formData })
+          // Create a new FormData without the id field
+          const updateFormData = new FormData()
+          for (const [key, value] of formData.entries()) {
+            if (key !== 'id') {
+              updateFormData.append(key, value)
+            }
+          }
+          response = await updateHospital({ id, formData: updateFormData })
           break
+        }
         case 'DELETE':
           const deleteId = formData.get('id') as string
           if (!deleteId) {

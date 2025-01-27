@@ -1,6 +1,8 @@
 <template>
 <div class="min-h-[45vh]">
-  <SearchForm :initialValues="getSearchParamsFromURL()" @submit-search="handleSearchSubmit" />
+  <div class="p-3 bg-[#FFF8EA]">
+    <SearchForm :initialValues="getSearchParamsFromURL()" :initialLocation="getInitialLocation()" @submit-search="handleSearchSubmit" />
+  </div>
   <div class="mt-4 p-3">
     <div v-if="isLoading">Loading...</div>
   <div v-else-if="error" class="text-center p-2 bg-[#FFF8EA] rounded-md text-red-500">Error: {{ error }}</div>
@@ -36,6 +38,7 @@ const router = useRouter()
 // Extract search params from URL
 const getSearchParamsFromURL = (): SearchParams => {
   const { query } = route
+  
   return {
     serviceType: query.serviceType as string,
     entityType: query.entityType as string,
@@ -43,8 +46,12 @@ const getSearchParamsFromURL = (): SearchParams => {
     latitude: query.latitude ? Number(query.latitude) : undefined,
     longitude: query.longitude ? Number(query.longitude) : undefined,
   }
+  
 }
-
+const getInitialLocation = () => {
+  const { latitude, longitude } = getSearchParamsFromURL()
+  return latitude && longitude ? { latitude, longitude, display: '' } : undefined
+}
 
 // handle search
 
@@ -75,6 +82,7 @@ watchEffect(() => {
   if (isInitialLoad.value && hasValidParams) {
     // Only perform search on initial load with parameters
     handleSearch(searchParams)
+    console.log(searchParams)
     isInitialLoad.value = false
   }
   // Route changes after initial load won't trigger automatic search

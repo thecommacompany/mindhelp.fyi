@@ -13,8 +13,11 @@
           <NuxtLink to="/dashboard" class="text-gray-600 hover:text-emerald-700 transition-colors">Overview</NuxtLink>
           <NuxtLink to="/dashboard/profile" class="text-gray-600 hover:text-emerald-700 transition-colors">Profile</NuxtLink>
           <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-600">{{ user?.name }}</span>
-            <button @click="clear" class="text-red-600 hover:text-red-700 transition-colors">Logout</button>
+            <div class="px-4 py-2 text-sm text-gray-600"><Avatar>
+            <AvatarImage  :src="user.picture" />
+            <AvatarFallback >{{ user?.name.charAt(0) }}</AvatarFallback>
+          </Avatar></div>
+            <button @click="handleSignOut" class="text-red-600 hover:text-red-700 transition-colors">Logout</button>
           </div>
         </div>
 
@@ -32,11 +35,15 @@
       <!-- Mobile Menu -->
       <div v-show="isMenuOpen" class="md:hidden">
         <div class="py-4 space-y-4">
-          <div class="px-4 py-2 text-sm text-gray-600">{{ user?.name }}</div>
+          
+          <div class="px-4 py-2 text-sm text-gray-600"><Avatar>
+            <AvatarImage  :src="user.picture" />
+            <AvatarFallback >{{ user?.name.charAt(0) }}</AvatarFallback>
+          </Avatar></div>
           <NuxtLink to="/dashboard" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg" @click="isMenuOpen=false">Overview</NuxtLink>
           <NuxtLink to="/dashboard/profile" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg" @click="isMenuOpen=false">Profile</NuxtLink>
           
-          <button @click="clear" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg" >Logout</button>
+          <button @click="handleSignOut" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg" >Logout</button>
         </div>
       </div>
     </nav>
@@ -46,4 +53,9 @@
 <script setup lang="ts">
 const isMenuOpen = ref(false)
 const { user, clear } = useUserSession()
+const router = useRouter()
+const handleSignOut = async () => {
+  await clear()
+  await router.push('/')
+}
 </script>

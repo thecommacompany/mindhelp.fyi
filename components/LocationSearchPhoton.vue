@@ -119,12 +119,11 @@ interface PhotonFeature {
   properties: PhotonProperties
 }
 
-const props = defineProps<{
-  modelValue?: { lat: number; lng: number; display: string }
-}>()
+const model = defineModel<{ latitude: number; longitude: number; display: string } | undefined>()
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: { lat: number; lng: number; display: string } | undefined): void
+const props = defineProps<{
+  latitude?: number
+  longitude?: number
 }>()
 
 const { showToast } = useToast()
@@ -206,23 +205,50 @@ const handleInput = () => {
 watch(selectedLocation, (location) => {
   if (location) {
     const [lng, lat] = location.geometry.coordinates
-    emit('update:modelValue', {
-      lat,
-      lng,
+    model.value = {
+      latitude: lat,
+      longitude: lng,
       display: formatDisplayValue(location)
-    })
+    }
   } else {
-    emit('update:modelValue', undefined)
+    model.value = undefined
   }
 })
 
 // Watch for v-model changes
-watch(() => props.modelValue, (newValue) => {
+watch(() => model, (newValue) => {
   if (!newValue) {
     selectedLocation.value = null
     searchQuery.value = ''
   }
 }, { deep: true })
+
+// Watch for latitude/longitude prop changes
+watch([() => props.latitude, () => props.longitude], async ([newLat, newLng]) => {
+  if (newLat && newLng && (!selectedLocation.value || 
+      selectedLocation.value.geometry.coordinates[1] !== newLat || 
+      selectedLocation.value.geometry.coordinates[0] !== newLng)) {
+    isLoading.value = true
+    try {
+      // Reverse geocode the coordinates
+      const response = await fetch(`https://photon.komoot.io/reverse?lat=${newLat}&lon=${newLng}`)
+      const data = await response.json()
+      
+      if (data.features && data.features.length > 0) {
+        selectedLocation.value = data.features[0]
+        model.value = {
+          latitude: newLat,
+          longitude: newLng,
+          display: formatDisplayValue(data.features[0])
+        }
+      }
+    } catch (error) {
+      showToast('Error fetching location details', 'error')
+    } finally {
+      isLoading.value = false
+    }
+  }
+}, { immediate: true })
 
 // Cleanup
 onUnmounted(() => {
