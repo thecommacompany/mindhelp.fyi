@@ -9,13 +9,13 @@
 
         <!-- Desktop Navigation -->
         <div class="hidden md:flex items-center space-x-8">
-            
-          <NuxtLink to="/find-help" class="text-gray-600 hover:text-emerald-700 transition-colors">Find Help</NuxtLink>
-          <NuxtLink to="/resources" class="text-gray-600 hover:text-emerald-700 transition-colors">Resources</NuxtLink>
-          <NuxtLink to="/emergency" class="text-red-600 hover:text-red-700 transition-colors font-medium">Emergency</NuxtLink>
-          <NuxtLink v-if="user" to="/dashboard" class="text-gray-600 hover:text-emerald-700 transition-colors font-bold">Dashboard</NuxtLink>
+          
+          <NuxtLink to="/find-help" class="text-gray-600 hover:text-emerald-700 transition-colors">{{ $t('nav.findHelp') }}</NuxtLink>
+          <NuxtLink to="/resources" class="text-gray-600 hover:text-emerald-700 transition-colors">{{ $t('nav.resources') }}</NuxtLink>
+          <NuxtLink to="/emergency" class="text-red-600 hover:text-red-700 transition-colors font-medium">{{ $t('nav.emergency') }}</NuxtLink>
+          <NuxtLink v-if="user" to="/dashboard" class="text-gray-600 hover:text-emerald-700 transition-colors font-bold">{{ $t('nav.dashboard') }}</NuxtLink>
         </div>
-
+        <i18nSwitch/>
         <!-- Mobile Menu Button -->
         <button @click="isMenuOpen = !isMenuOpen" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
           <span class="sr-only">Open menu</span>
@@ -25,12 +25,13 @@
             <span class="block w-full h-0.5 bg-gray-600 transition-transform" :class="{ '-rotate-45 -translate-y-1.5': isMenuOpen }"></span>
           </div>
         </button>
+      
       </div>
 
       <!-- Mobile Menu -->
       <div v-show="isMenuOpen" class="md:hidden">
         <div class="py-4 space-y-4">
-         
+        
           <NuxtLink to="/find-help" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg">Find Help</NuxtLink>
           <NuxtLink to="/resources" class="block px-4 py-2 text-gray-600 hover:bg-emerald-50 rounded-lg">Resources</NuxtLink>
           <NuxtLink to="/emergency" class="block px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg font-medium">Emergency</NuxtLink>
@@ -42,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import i18nSwitch from './i18nSwitch.vue'
 const isMenuOpen = ref(false)
 const { user, clear } = useUserSession()
 </script>

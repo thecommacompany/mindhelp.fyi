@@ -12,8 +12,24 @@ export default defineNuxtConfig({
     '@pinia/colada-nuxt',
     '@pinia/nuxt',
     'shadcn-nuxt',
-    '@nuxtjs/color-mode'
+    '@nuxtjs/color-mode',
+    '@nuxtjs/i18n'
   ],
+  i18n: {
+    strategy: 'no_prefix',
+    locales: [
+      {
+        code: 'en',
+        file: 'en.ts',
+      },
+      {
+        code: 'ml',
+        file: 'ml.ts',
+      },
+    ],
+    lazy: true,
+    defaultLocale: 'en',
+  },
    hub: {
     blob: true,
     database: true

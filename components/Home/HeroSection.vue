@@ -1,19 +1,19 @@
 <template>
   <div class="text-center">
-    <h1 class="text-4xl md:text-5xl font-bold font-display text-emerald-800 mb-6">
-      Need help but not sure where to start?
+    <h1 class="text-4xl md:text-5xl font-bold font-display leading-normal text-emerald-800 mb-6">
+      {{ $t('home.hero.title') }}
     </h1>
     
     <!-- Initial State -->
     <div v-if="!showQuestions" class="space-y-8">
       <p class="text-xl text-gray-600 max-w-2xl mx-auto">
-        Let us guide you to the right support, one step at a time.
+        {{ $t('home.hero.subtitle') }}
       </p>
       <button 
         @click="showQuestions = true"
         class="inline-flex items-center px-8 py-4 text-lg bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all hover:shadow-lg"
       >
-        Help me figure this out
+        {{ $t('home.hero.cta') }}
         <span class="material-icons ml-2">arrow_forward</span>
       </button>
     </div>
